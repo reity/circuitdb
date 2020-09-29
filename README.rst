@@ -21,6 +21,20 @@ The library can be imported in the usual ways::
     import circuitdb
     from circuitdb import circuitdb
 
+Testing and Conventions
+-----------------------
+All unit tests are executed when using `nose <https://nose.readthedocs.io/>`_ (see ``setup.cfg`` for configution details)::
+
+    nosetests
+
+Alternatively, all unit tests are included in the module itself and can be executed using `doctest <https://docs.python.org/3/library/doctest.html>`_::
+
+    python circuitdb/circuitdb.py -v
+
+Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
+
+    pylint circuitdb
+
 Contributions
 -------------
 In order to contribute to the source code, open an issue or submit a pull request on the GitHub page for this library.

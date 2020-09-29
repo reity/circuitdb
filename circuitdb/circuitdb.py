@@ -916,6 +916,78 @@ _db._data\
 def circuitdb(truthtable, operators=None, minimize=None):
     """
     Function to extract raw circuit data.
+
+    >>> _d = _db._data
+    >>> all(len(_d[1][o][m].keys()) == 4 for o in _d[1] for m in _d[1][o])
+    True
+    >>> all(len(_d[2][o][m].keys()) == 16 for o in _d[2] for m in _d[2][o])
+    True
+    >>> all(len(_d[3][o][m].keys()) == 256 for o in _d[3] for m in _d[3][o])
+    True
+
+    >>> circuitdb((0, 0))
+    (0, ((0, 0), 0))
+    >>> circuitdb((False, False))
+    (0, ((0, 0), 0))
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [logical.id_, logical.not_, logical.and_, logical.or_])
+    (0, 1, 2, ((1, 0), 0), ((0, 0, 0, 1), 0, 3))
+
+    >>> from itertools import product
+    >>> def eval(c, v):
+    ...     m = list(v)
+    ...     for e in c[len(m):]:
+    ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
+    ...     return m[-1]
+    >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0,1]]*a)])
+    >>> aoms = [(a, o, m) for a in _d for o in _d[a] for m in _d[a][o]]
+    >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[[0, 1]]*(2**a))) for (a, o, m) in aoms)
+    True
+
+    >>> circuitdb([0, 0, 0, 0])
+    Traceback (most recent call last):
+      ...
+    TypeError: truth table must be a tuple
+    >>> circuitdb((0, 0, 0))
+    Traceback (most recent call last):
+      ...
+    ValueError: truth table must have a length that is a power of two
+    >>> circuitdb(('abc', 'xyz'))
+    Traceback (most recent call last):
+      ...
+    TypeError: truth table must contain boolean values or integers
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    Traceback (most recent call last):
+      ...
+    ValueError: no entries for functions of arity 4
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), 132)
+    Traceback (most recent call last):
+      ...
+    TypeError: collection of operators must be a set, frozenset, list, or tuple
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), 132)
+    Traceback (most recent call last):
+      ...
+    TypeError: collection of operators must be a set, frozenset, list, or tuple
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [(0, 1, 0)])
+    Traceback (most recent call last):
+      ...
+    ValueError: collection of operators must only contain valid operators
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [(0, 1)])
+    Traceback (most recent call last):
+      ...
+    ValueError: no entries for functions of arity 3 that have only the specified operators
+    >>> id_not_and_or = [logical.id_, logical.not_, logical.and_, logical.or_]
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, 123)
+    Traceback (most recent call last):
+      ...
+    TypeError: collection of operators the number of which to minimize must be a set, frozenset, list, or tuple
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1, 0)])
+    Traceback (most recent call last):
+      ...
+    ValueError: collection of operators the number of which to minimize must contain only valid operators
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1)])
+    Traceback (most recent call last):
+      ...
+    ValueError: no entries for functions of arity 3 for specified operators and minimization criteria
     """
     # Ensure the truth table is a tuple of booleans or integers  of the correct size.
     if not isinstance(truthtable, tuple):
