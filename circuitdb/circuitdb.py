@@ -1049,4 +1049,4 @@ def circuitdb(truthtable, operators=None, minimize=None):
     return _db._data[arity][frozenset(operators)][frozenset(minimize)][truthtable]
 
 if __name__ == "__main__":
-    doctest.testmod()
+    doctest.testmod() # pragma: no cover
