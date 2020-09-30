@@ -4,11 +4,14 @@ circuitdb
 
 Data set of optimal circuits for Boolean functions that have low arity.
 
-|pypi|
+|pypi| |travis|
 
 .. |pypi| image:: https://badge.fury.io/py/circuitdb.svg
    :target: https://badge.fury.io/py/circuitdb
    :alt: PyPI version and link.
+
+.. |travis| image:: https://travis-ci.com/reity/circuitdb.svg?branch=master
+   :target: https://travis-ci.com/reity/circuitdb
 
 Package Installation and Usage
 ------------------------------
