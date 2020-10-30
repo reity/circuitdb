@@ -17,13 +17,15 @@ class _db(dict):
 
 for i in range(1, 4):
     _db._data[i] = {
-        frozenset([logical.id_, logical.not_, logical.and_, logical.or_]): {},
-        frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]): {},
-        frozenset(logical.every): {}
+        1: {
+            frozenset([logical.id_, logical.not_, logical.and_, logical.or_]): {},
+            frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]): {},
+            frozenset(logical.every): {}
+        }
     }
 
 _db._data\
-    [1]\
+    [1][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     = {
@@ -34,7 +36,7 @@ _db._data\
     }
 
 _db._data\
-    [2]\
+    [2][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     = {
@@ -57,7 +59,7 @@ _db._data\
     }
 
 _db._data\
-    [3]\
+    [3][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     = {
@@ -320,7 +322,7 @@ _db._data\
     }
 
 _db._data\
-    [1]\
+    [1][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
     = {
@@ -331,7 +333,7 @@ _db._data\
     }
 
 _db._data\
-    [2]\
+    [2][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
     = {
@@ -354,7 +356,7 @@ _db._data\
     }
 
 _db._data\
-    [3]\
+    [3][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
     = {
@@ -617,7 +619,7 @@ _db._data\
     }
 
 _db._data\
-    [1]\
+    [1][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
     = {
@@ -628,7 +630,7 @@ _db._data\
     }
 
 _db._data\
-    [2]\
+    [2][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
     = {
@@ -651,7 +653,7 @@ _db._data\
     }
 
 _db._data\
-    [3]\
+    [3][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
     = {
@@ -923,7 +925,7 @@ class circuitdb(dict):
         """
         Function-like interface with user-friendly defaults to retrieve circuit data.
 
-        >>> _d = _db._data
+        >>> _d = {i: _db._data[i][1] for i in range(1,4)}
         >>> all(len(_d[1][o][m].keys()) == 4 for o in _d[1] for m in _d[1][o])
         True
         >>> all(len(_d[2][o][m].keys()) == 16 for o in _d[2] for m in _d[2][o])
@@ -997,10 +999,10 @@ class circuitdb(dict):
 
         >>> list(sorted(list(circuitdb.keys()))) == [1, 2, 3]
         True
-        >>> ks = list(sorted(list(circuitdb[1].keys())))
+        >>> ks = list(sorted(list(circuitdb[1][1].keys())))
         >>> ks[0] == frozenset({logical.and_, logical.or_, logical.not_, logical.id_})
         True
-        >>> circuitdb[2][ks[0]][ks[0]][(1,1,1,1)]
+        >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)]
         [((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 1), 0, 2), ((0, 1), 3)]
         """
         # Ensure the truth table is a tuple of booleans or integers  of the correct size.
@@ -1031,14 +1033,14 @@ class circuitdb(dict):
         if not frozenset(operators).issubset(logical.every):
             raise ValueError('collection of operators must only contain valid operators')
 
-        if frozenset(operators) not in _db._data[arity]:
+        if frozenset(operators) not in _db._data[arity][1]:
             raise ValueError(
                 'no entries for functions of arity ' + str(arity) + ' ' +\
                 'that have only the specified operators'
             )
 
         # Minimize the total number of operators of any available kind by default.
-        minimize_ = list(sorted(list(_db._data[arity][frozenset(operators)].keys())))[0]
+        minimize_ = list(sorted(list(_db._data[arity][1][frozenset(operators)].keys())))[0]
         minimize = minimize_ if minimize is None else minimize
 
         # Check that the operators to minimize are valid and corresponding data exists.
@@ -1054,7 +1056,7 @@ class circuitdb(dict):
                 'must contain only valid operators'
             )
 
-        if frozenset(minimize) not in _db._data[arity][frozenset(operators)]:
+        if frozenset(minimize) not in _db._data[arity][1][frozenset(operators)]:
             raise ValueError(
                 'no entries for functions of arity ' + str(arity) + ' ' +\
                 'for specified operators and minimization criteria'
@@ -1062,7 +1064,7 @@ class circuitdb(dict):
 
         # Wrapping result in list constructor ensures that users do not inadvertently
         # modify the data set entries.
-        return list(_db._data[arity][frozenset(operators)][frozenset(minimize)][truthtable])
+        return list(_db._data[arity][1][frozenset(operators)][frozenset(minimize)][truthtable])
 
 # Exported object with function-like and dictionary-like interfaces
 # hides the local class definition that is used to construct it.
