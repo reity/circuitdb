@@ -34,7 +34,7 @@ class _om(dict):
             truthtable = tuple(map(int, truthtable))
 
         # Retrieve the circuit data.
-        return super(_om, self).__getitem__(truthtable)
+        return super().__getitem__(truthtable)
 
 # Set up containers for each (arity, coarity, operator set) combination
 # for which data is included.
