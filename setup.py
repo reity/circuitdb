@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name="circuitdb",
-    version="0.2.0",
+    version="1.0.0",
     packages=["circuitdb",],
     install_requires=["logical",],
     license="MIT",

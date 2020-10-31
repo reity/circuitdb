@@ -27,7 +27,7 @@ class _om(dict):
         # Normalize the truth table representation (no validation).
         if all(isinstance(e, tuple) for e in truthtable):
             truthtable = tuple([tuple(map(int, e)) for e in truthtable])
-            ls = set([len(e) for e in truthtable])
+            ls = set(len(e) for e in truthtable)
             if len(ls) == 1 and list(ls)[0] == 1:
                 truthtable = tuple([e[0] for e in truthtable])
         else:
@@ -1874,7 +1874,7 @@ class circuitdb(dict):
                 raise TypeError('truth table must contain boolean values, integers in the range [0, 1], or tuples of such')
         elif not all(e in [0, 1, False, True] for e in truthtable):
             raise TypeError('truth table must contain boolean values, integers in the range [0, 1], or tuples of such')
-   
+
         # Determine the arity of the function represented by the truth table.
         arity = int(math.log2(len(truthtable)))
 
@@ -1885,7 +1885,7 @@ class circuitdb(dict):
         # Determine the number of outputs in the truth table (and check it is consistent).
         coarity = 1
         if all(isinstance(e, tuple) for e in truthtable):
-            ls = set([len(e) for e in truthtable])
+            ls = set(len(e) for e in truthtable)
             if len(ls) == 1:
                 coarity = list(ls)[0]
                 if coarity < 1:
