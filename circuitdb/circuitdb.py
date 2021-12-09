@@ -3,8 +3,8 @@
 Data set of optimal circuits for Boolean functions that have
 low arity.
 """
-
 import doctest
+import os
 import math
 import logical
 
@@ -1740,7 +1740,6 @@ class circuitdb(dict):
     Wrapper class for the circuit data set that supports both
     a dictionary-like interface and a function-like interface.
     """
-
     def __call__(self, truthtable, operators=None, minimize=None):
         """
         Function-like interface with user-friendly defaults to retrieve circuit data.
@@ -1954,9 +1953,10 @@ class circuitdb(dict):
         return list(_db._data[arity][coarity][frozenset(operators)][frozenset(minimize)][truthtable])
 
 # Exported object with function-like and dictionary-like interfaces
-# hides the local class definition that is used to construct it.
-circuitdb_ = circuitdb
-circuitdb = circuitdb_(_db._data)
+# hides the class definition that is used to construct it.
+if os.environ.get("CIRCUITDB_DOCS") != "1":
+    circuitdb_ = circuitdb
+    circuitdb = circuitdb_(_db._data)
 
 if __name__ == "__main__":
     doctest.testmod() # pragma: no cover
