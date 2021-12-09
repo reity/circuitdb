@@ -4,7 +4,7 @@ circuitdb
 
 Data set of optimal circuits for Boolean functions that have low arity.
 
-|pypi| |readthedocs| |travis| |coveralls|
+|pypi| |readthedocs| |actions| |coveralls|
 
 .. |pypi| image:: https://badge.fury.io/py/circuitdb.svg
    :target: https://badge.fury.io/py/circuitdb
@@ -14,8 +14,9 @@ Data set of optimal circuits for Boolean functions that have low arity.
    :target: https://circuitdb.readthedocs.io/en/latest/?badge=latest
    :alt: Read the Docs documentation status.
 
-.. |travis| image:: https://travis-ci.com/reity/circuitdb.svg?branch=master
-   :target: https://travis-ci.com/reity/circuitdb
+.. |actions| image:: https://github.com/reity/circuitdb/workflows/lint-test-cover-docs/badge.svg
+   :target: https://github.com/reity/circuitdb/actions/workflows/lint-test-cover-docs.yml
+   :alt: GitHub Actions status.
 
 .. |coveralls| image:: https://coveralls.io/repos/github/reity/circuitdb/badge.svg?branch=master
    :target: https://coveralls.io/github/reity/circuitdb?branch=master
