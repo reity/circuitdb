@@ -1,2 +1,2 @@
-"""Give users direct access to retrieval function."""
+"""Gives users direct access to the class."""
 from circuitdb.circuitdb import circuitdb

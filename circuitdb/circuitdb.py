@@ -1,7 +1,6 @@
-"""Data set of optimal circuits.
-
+"""
 Data set of optimal circuits for Boolean functions that have
-low arity.
+specific low arities.
 """
 import doctest
 import os
@@ -26,10 +25,10 @@ class _om(dict):
         """
         # Normalize the truth table representation (no validation).
         if all(isinstance(e, tuple) for e in truthtable):
-            truthtable = tuple([tuple(map(int, e)) for e in truthtable])
+            truthtable = tuple(tuple(map(int, e)) for e in truthtable)
             ls = set(len(e) for e in truthtable)
             if len(ls) == 1 and list(ls)[0] == 1:
-                truthtable = tuple([e[0] for e in truthtable])
+                truthtable = tuple(e[0] for e in truthtable)
         else:
             truthtable = tuple(map(int, truthtable))
 
@@ -1890,7 +1889,7 @@ class circuitdb(dict):
                 if coarity < 1:
                     raise ValueError('truth table entries must each represent at least one value')
                 elif coarity == 1: # Convert tuple of singleton tuples into simple tuple.
-                    truthtable = tuple([e[0] for e in truthtable])
+                    truthtable = tuple(e[0] for e in truthtable)
             else:
                 raise ValueError('truth table entries must all have the same length')
 
@@ -1908,7 +1907,7 @@ class circuitdb(dict):
         if coarity == 1:
             truthtable = tuple(map(int, truthtable))
         else:
-            truthtable = tuple([tuple(map(int, e)) for e in truthtable])
+            truthtable = tuple(tuple(map(int, e)) for e in truthtable)
 
         # Allow all operators by default or check that data is present for given operators.
         operators = frozenset(logical.every) if operators is None else operators
