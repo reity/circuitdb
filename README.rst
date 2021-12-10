@@ -32,6 +32,32 @@ The library can be imported in the usual ways::
     import circuitdb
     from circuitdb import circuitdb
 
+Examples
+^^^^^^^^
+This library provides a database that contains an (arbitrary but fixed) example of the smallest possible logical circuit (in terms of the number of unary and/or binary gates) for each possible logical function (from a finite set of functions). Logical functions are represented using the `logical <https://pypi.org/project/logical/>`_ library. In the example below, a circuit is retrieved for the function corresponding to the truth table ``(0, 0, 0, 0, 0, 0, 0, 1)`` and to the logical formula *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z*::
+
+    >>> from circuitdb import circuitdb
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((0, 0, 0, 1), 2, 3), ((0, 1), 4)]
+
+The representation of the circuit above consists of a list of unary and binary gates. Each gate is represented as a tuple. The first entry in each gate tuple is the logical function corresponding to that gate (represented using the `logical <https://pypi.org/project/logical/>`_ library). The remaining entries in the gate tuple are the indices of the input gates to that gate. For example, the entry ``((0, 0, 0, 1), 2, 3)`` represents a gate that is a conjunction of the gates at positions ``2`` and ``3`` in the overall list.
+
+For any given logical function, it is possible to construct a corresponding circuit using a variety of gate sets. For each function, the database contains an example of a smallest circuit for each of a small collection of sets of unary and binary gates. In the remaining examples below, circuits for the function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. All gates in the circuit below are found in the set ``{logical.id_, logical.not_, logical.and_, logical.or_}``::
+
+    >>> from logical import logical
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.or_]))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 2), ((0, 1, 1, 1), 0, 2), ((1, 0), 4), ((0, 1, 1, 1), 3, 5), ((0, 0, 0, 1), 1, 6), ((0, 1), 7)]
+
+All gates in the circuit below are found in the set ``{logical.id_, logical.not_, logical.and_, logical.xor_}``::
+
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 0), 2, 3), ((0, 0, 0, 1), 1, 4), ((0, 1), 5)]
+
+By default (or if the set of all gates ``logical.every`` is specified), a smallest circuit that can be built using *any* combination of unary or binary gates is returned::
+
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
+
 Documentation
 -------------
 .. include:: toc.rst
