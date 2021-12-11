@@ -1736,20 +1736,38 @@ _db._data\
 
 class circuitdb(dict):
     """
-    Wrapper class for the circuit data set that supports both
-    a dictionary-like interface and a function-like interface.
+    Wrapper class for the circuit data set that supports both a dictionary-like
+    interface and a function-like interface.
+
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((0, 0, 0, 1), 2, 3), ((0, 1), 4)]
+
+    For any given logical function, it is possible to construct a corresponding
+    circuit using a variety of gate sets. For each function, the database contains
+    an example of a smallest circuit for each of a small collection of sets of
+    unary and binary gates. In the remaining examples below, circuits for the
+    function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. All gates in the circuit
+    below are in the set ``{logical.id_, logical.not_, logical.and_, logical.or_}``.
+
+    >>> from logical import logical
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.or_]))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 2), ((0, 1, 1, 1), 0, 2), ((1, 0), 4), ((0, 1, 1, 1), 3, 5), ((0, 0, 0, 1), 1, 6), ((0, 1), 7)]
+
+    All gates in the circuit below are found in the set
+    ``{logical.id_, logical.not_, logical.and_, logical.xor_}``.
+
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 0), 2, 3), ((0, 0, 0, 1), 1, 4), ((0, 1), 5)]
+
+    By default (or if the set of all gates ``logical.every`` is specified), a smallest circuit that can be built using *any* combination of unary or binary gates is returned.
+
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
     """
     def __call__(self, truthtable, operators=None, minimize=None):
         """
-        Function-like interface with user-friendly defaults to retrieve circuit data.
-
-        >>> _d = {i: _db._data[i][1] for i in range(1,4)}
-        >>> all(len(_d[1][o][m].keys()) == 4 for o in _d[1] for m in _d[1][o])
-        True
-        >>> all(len(_d[2][o][m].keys()) == 16 for o in _d[2] for m in _d[2][o])
-        True
-        >>> all(len(_d[3][o][m].keys()) == 256 for o in _d[3] for m in _d[3][o])
-        True
+        Function-like interface for the circuit database, with user-friendly
+        defaults for retrieving circuit data.
 
         >>> circuitdb((0, 0))
         [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
@@ -1773,7 +1791,9 @@ class circuitdb(dict):
         ...     for e in c[len(m):]:
         ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
         ...     return m[-1]
-        >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0,1]]*a)])
+        >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0, 1]]*a)])
+
+        >>> _d = {i: _db._data[i][1] for i in range(1,4)}
         >>> aoms = [(a, o, m) for a in _d for o in _d[a] for m in _d[a][o]]
         >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[[0, 1]]*(2**a))) for (a, o, m) in aoms)
         True
@@ -1787,6 +1807,9 @@ class circuitdb(dict):
         >>> pairs = [(0, 0), (0, 1), (1, 0), (0, 1)]
         >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[pairs]*(2**a))) for (a, o, m) in aoms)
         True
+
+        Any attempt to access the data with a malformed key raises an
+        excpetion.
 
         >>> circuitdb([0, 0, 0, 0])
         Traceback (most recent call last):
@@ -1861,6 +1884,16 @@ class circuitdb(dict):
         True
         >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)]
         [((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 1), 0, 2), ((0, 1), 3)]
+
+        The internal representation organizes the circuits by arity.
+
+        >>> _d = {i: _db._data[i][1] for i in range(1,4)}
+        >>> all(len(_d[1][o][m].keys()) == 4 for o in _d[1] for m in _d[1][o])
+        True
+        >>> all(len(_d[2][o][m].keys()) == 16 for o in _d[2] for m in _d[2][o])
+        True
+        >>> all(len(_d[3][o][m].keys()) == 256 for o in _d[3] for m in _d[3][o])
+        True
         """
         # Ensure the function truth table is a tuple.
         if not isinstance(truthtable, tuple):
