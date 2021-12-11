@@ -20,10 +20,11 @@ Data set of optimal circuits for Boolean functions that have low arity.
 
 .. |coveralls| image:: https://coveralls.io/repos/github/reity/circuitdb/badge.svg?branch=master
    :target: https://coveralls.io/github/reity/circuitdb?branch=master
+   :alt: Coveralls test coverage summary.
 
 Package Installation and Usage
 ------------------------------
-The package is available on PyPI::
+The package is available on `PyPI <https://pypi.org/project/circuitdb/>`_::
 
     python -m pip install circuitdb
 
@@ -72,7 +73,8 @@ Testing and Conventions
 -----------------------
 All unit tests are executed and their coverage is measured when using `nose <https://nose.readthedocs.io/>`_ (see ``setup.cfg`` for configution details)::
 
-    nosetests
+    python -m pip install nose coverage
+    nosetests --cover-erase
 
 Alternatively, all unit tests are included in the module itself and can be executed using `doctest <https://docs.python.org/3/library/doctest.html>`_::
 
@@ -80,11 +82,12 @@ Alternatively, all unit tests are included in the module itself and can be execu
 
 Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
 
+    python -m pip install pylint
     pylint circuitdb
 
 Contributions
 -------------
-In order to contribute to the source code, open an issue or submit a pull request on the GitHub page for this library.
+In order to contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/reity/circuitdb>`_ for this library.
 
 Versioning
 ----------
