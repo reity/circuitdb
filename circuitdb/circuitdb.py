@@ -1763,11 +1763,47 @@ class circuitdb(dict):
 
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
     [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
+
+    The database supports retrieval using index notation, as well.
+
+    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][(0, 0)]
+    [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
+    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][((0,), (0,))]
+    [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
+
+    The top-level database instance has keys that represent to the number of
+    inputs of the logical function. The second level down, the keys represent
+    the number of outputs of a logical function. The third level down, keys
+    represent the set of unary or binary gates to which circuits are restricted.
+    Finally, the last level down, the keys represent logical functions.
+
+    >>> list(sorted(list(circuitdb.keys()))) == [1, 2, 3]
+    True
+    >>> ks = list(sorted(list(circuitdb[1][1].keys())))
+    >>> ks[0] == frozenset({logical.and_, logical.or_, logical.not_, logical.id_})
+    True
+    >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)]
+    [((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 1), 0, 2), ((0, 1), 3)]
+
+    Note that the internal representation organizes the circuits by arity.
+
+    >>> _d = {i: _db._data[i][1] for i in range(1,4)}
+    >>> all(len(_d[1][o][m].keys()) == 4 for o in _d[1] for m in _d[1][o])
+    True
+    >>> all(len(_d[2][o][m].keys()) == 16 for o in _d[2] for m in _d[2][o])
+    True
+    >>> all(len(_d[3][o][m].keys()) == 256 for o in _d[3] for m in _d[3][o])
+    True
     """
     def __call__(self, truthtable, operators=None, minimize=None):
         """
         Function-like interface for the circuit database, with user-friendly
         defaults for retrieving circuit data.
+
+        By supplying a logical function (represented as a tuple), it is possible
+        to retrieve a smallest circuit that implements that function. Logical
+        functions having one output are represented using a tuple of
+        integers (or booleans), or a tuple of one-element tuples.
 
         >>> circuitdb((0, 0))
         [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
@@ -1775,41 +1811,21 @@ class circuitdb(dict):
         [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
         >>> circuitdb((False, False))
         [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
-        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [logical.id_, logical.not_, logical.and_, logical.or_])
-        [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 0, 0, 1), 0, 3), ((0, 1), 4)]
+
+        A logical function having a vector of two outputs is represented using
+        a tuple of two-element tuples.
+
         >>> circuitdb(((1, 0), (1, 0), (1, 0), (0, 1)))
         [0, 1, ((0, 0, 0, 1), 0, 1), ((1, 0), 2), ((0, 1), 3), ((0, 1), 2)]
 
-        >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][(0, 0)]
-        [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
-        >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][((0,), (0,))]
-        [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
+        It is also possible to retrieve a smallest circuit that only uses gates
+        from a specific set of gates.
 
-        >>> from itertools import product
-        >>> def eval(c, v):
-        ...     m = list(v)
-        ...     for e in c[len(m):]:
-        ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
-        ...     return m[-1]
-        >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0, 1]]*a)])
-
-        >>> _d = {i: _db._data[i][1] for i in range(1,4)}
-        >>> aoms = [(a, o, m) for a in _d for o in _d[a] for m in _d[a][o]]
-        >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[[0, 1]]*(2**a))) for (a, o, m) in aoms)
-        True
-
-        >>> def eval(c, v):
-        ...     m = list(v)
-        ...     for e in c[len(m):]:
-        ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
-        ...     return tuple(m[-2:])
-        >>> aoms = [(a, o, m) for a in [2] for o in _db._data[a][2] for m in _db._data[a][2][o]]
-        >>> pairs = [(0, 0), (0, 1), (1, 0), (0, 1)]
-        >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[pairs]*(2**a))) for (a, o, m) in aoms)
-        True
+        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [logical.id_, logical.not_, logical.and_, logical.or_])
+        [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 0, 0, 1), 0, 3), ((0, 1), 4)]
 
         Any attempt to access the data with a malformed key raises an
-        excpetion.
+        exception.
 
         >>> circuitdb([0, 0, 0, 0])
         Traceback (most recent call last):
@@ -1877,22 +1893,28 @@ class circuitdb(dict):
           ...
         ValueError: no entries for functions of arity 3 for specified operators and minimization criteria
 
-        >>> list(sorted(list(circuitdb.keys()))) == [1, 2, 3]
-        True
-        >>> ks = list(sorted(list(circuitdb[1][1].keys())))
-        >>> ks[0] == frozenset({logical.and_, logical.or_, logical.not_, logical.id_})
-        True
-        >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)]
-        [((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 1), 0, 2), ((0, 1), 3)]
+        Additional exhaustive tests are presented below.
 
-        The internal representation organizes the circuits by arity.
-
+        >>> from itertools import product
+        >>> def eval(c, v):
+        ...     m = list(v)
+        ...     for e in c[len(m):]:
+        ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
+        ...     return m[-1]
+        >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0, 1]]*a)])
         >>> _d = {i: _db._data[i][1] for i in range(1,4)}
-        >>> all(len(_d[1][o][m].keys()) == 4 for o in _d[1] for m in _d[1][o])
+        >>> aoms = [(a, o, m) for a in _d for o in _d[a] for m in _d[a][o]]
+        >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[[0, 1]]*(2**a))) for (a, o, m) in aoms)
         True
-        >>> all(len(_d[2][o][m].keys()) == 16 for o in _d[2] for m in _d[2][o])
-        True
-        >>> all(len(_d[3][o][m].keys()) == 256 for o in _d[3] for m in _d[3][o])
+        >>> def eval(c, v):
+        ...     m = list(v)
+        ...     for e in c[len(m):]:
+        ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
+        ...     return tuple(m[-2:])
+        >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0, 1]]*a)])
+        >>> aoms = [(a, o, m) for a in [2] for o in _db._data[a][2] for m in _db._data[a][2][o]]
+        >>> pairs = [(0, 0), (0, 1), (1, 0), (0, 1)]
+        >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[pairs]*(2**a))) for (a, o, m) in aoms)
         True
         """
         # Ensure the function truth table is a tuple.
