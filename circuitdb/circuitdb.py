@@ -1745,7 +1745,8 @@ class circuitdb(dict):
     For any given logical function, it is possible to construct a corresponding
     circuit using a variety of gate sets. For each function, the database contains
     an example of a smallest circuit for each of a small collection of sets of
-    unary and binary gates. In the remaining examples below, circuits for the
+    unary and binary gates. **The table under** :obj:`__call__` **lists the
+    supported combinations**. In the remaining examples below, circuits for the
     function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. All gates in the circuit
     below are in the set ``{logical.id_, logical.not_, logical.and_, logical.or_}``.
 
@@ -1823,6 +1824,37 @@ class circuitdb(dict):
 
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [logical.id_, logical.not_, logical.and_, logical.or_])
         [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 0, 0, 1), 0, 3), ((0, 1), 4)]
+
+        The combinations of circuit input count, circuit output count, and gate
+        set that are found in the database are enumerated in the table below
+
+        +------------+-------------+-------------------------------------------------------------+
+        | **inputs** | **outputs** | **gate set**                                                |
+        +------------+-------------+-------------------------------------------------------------+
+        | 1          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
+        +------------+-------------+-------------------------------------------------------------+
+        | 1          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
+        +------------+-------------+-------------------------------------------------------------+
+        | 1          | 1           | ``logical.every``                                           |
+        +------------+-------------+-------------------------------------------------------------+
+        | 2          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
+        +------------+-------------+-------------------------------------------------------------+
+        | 2          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
+        +------------+-------------+-------------------------------------------------------------+
+        | 2          | 1           | ``logical.every``                                           |
+        +------------+-------------+-------------------------------------------------------------+
+        | 2          | 2           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
+        +------------+-------------+-------------------------------------------------------------+
+        | 2          | 2           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
+        +------------+-------------+-------------------------------------------------------------+
+        | 2          | 2           | ``logical.every``                                           |
+        +------------+-------------+-------------------------------------------------------------+
+        | 3          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
+        +------------+-------------+-------------------------------------------------------------+
+        | 3          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
+        +------------+-------------+-------------------------------------------------------------+
+        | 3          | 1           | ``logical.every``                                           |
+        +------------+-------------+-------------------------------------------------------------+
 
         Any attempt to access the data with a malformed key raises an
         exception.

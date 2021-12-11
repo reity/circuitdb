@@ -34,7 +34,7 @@ The library can be imported in the usual ways::
 
 Examples
 ^^^^^^^^
-This library provides a database that contains an (arbitrary but fixed) example of the smallest possible logical circuit (in terms of the number of unary and/or binary gates) for each possible logical function (from a finite set of functions). Logical functions are represented using the `logical <https://pypi.org/project/logical/>`_ library. In the example below, a circuit is retrieved for the function corresponding to the truth table ``(0, 0, 0, 0, 0, 0, 0, 1)`` and to the logical formula *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z*::
+This library provides a database that contains an (arbitrary but fixed) example of the smallest possible logical circuit (in terms of the number of unary and/or binary gates) for each possible logical function (from a finite set of functions). Logical functions are represented using the `logical <https://pypi.org/project/logical/>`_ library. In the example below, a circuit is retrieved for the function *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z* corresponding to the truth table ``(0, 0, 0, 0, 0, 0, 0, 1)``::
 
     >>> from circuitdb import circuitdb
     >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
