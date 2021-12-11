@@ -1736,19 +1736,50 @@ _db._data\
 
 class circuitdb(dict):
     """
-    Wrapper class for the circuit data set that supports both a dictionary-like
-    interface and a function-like interface.
+    Wrapper class for a circuit data set that contains an (arbitrary but fixed)
+    example of the smallest possible logical circuit (in terms of the number of
+    unary and/or binary gates) for each possible logical function (from a finite
+    set of functions). This class supports both a dictionary-like interface
+    (inherited from the ``dict`` type) and a function-like interface (via the
+    :obj:`__call__` method).
+
+    **Logical Function Representation:** Logical functions are represented using
+    tuples, as in the `logical <https://pypi.org/project/logical/>`_ library. For
+    example, the logical function *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z*
+    (*i.e.*, three-argument conjunction) is represented using a tuple representation
+    of the output column of the truth table for the function (assuming that the
+    possible inputs are in ascending dictionary order): ``(0, 0, 0, 0, 0, 0, 0, 1)``.
 
     >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
     [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((0, 0, 0, 1), 2, 3), ((0, 1), 4)]
 
-    For any given logical function, it is possible to construct a corresponding
-    circuit using a variety of gate sets. For each function, the database contains
-    an example of a smallest circuit for each of a small collection of sets of
-    unary and binary gates. **The table under** :obj:`__call__` **lists the
-    supported combinations**. In the remaining examples below, circuits for the
-    function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. All gates in the circuit
-    below are in the set ``{logical.id_, logical.not_, logical.and_, logical.or_}``.
+    For logical functions having multiple outputs, the entries in the tuple may
+    themselves be tuples. For example, *f* (*x*, *y*) = (*y*, *x*) is represented
+    using the tuple ``((0, 0), (1, 0), (0, 1), (1, 1))``.
+
+    >>> circuitdb(((0, 0), (1, 0), (0, 1), (1, 1)))
+    [0, 1, ((0, 1), 1), ((0, 1), 0)]
+
+    **Circuit Representation:** The representation of a circuit consists of a list
+    of unary and binary gates. Each gate is represented as a tuple. The first entry
+    in each gate tuple is the logical function corresponding to that gate (represented
+    as in the `logical <https://pypi.org/project/logical/>`_ library). The remaining
+    entries in the gate tuple are the indices of the input gates to that gate.
+
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
+    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((0, 0, 0, 1), 2, 3), ((0, 1), 4)]
+
+    In the circuit above, the entry ``((0, 0, 0, 1), 2, 3)`` represents a gate that
+    is a conjunction (*i.e.*, ``(0, 0, 0, 1)``) of the gates at positions ``2`` and
+    ``3`` in the overall list (*i.e.* , ``((0, 1),)`` and ``((0, 0, 0, 1), 0, 1)``).
+
+    **Gate Sets:** For any given logical function, it is possible to construct a
+    corresponding circuit using a variety of gate sets. For each logical function,
+    the database contains an example of a smallest circuit for each of a small
+    collection of sets of unary and binary gates. In the remaining examples below,
+    circuits for the function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. The unary
+    and binary logical operators represented by the gates in the circuit below are
+    found in the set of ``{logical.id_, logical.not_, logical.and_, logical.or_}``.
 
     >>> from logical import logical
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.or_]))
@@ -1764,6 +1795,43 @@ class circuitdb(dict):
 
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
     [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
+
+    **Supported Combinations:** Each logical function has a number of input values,
+    a number of output values, and gates drawn from a specific gate set. Entries
+    exist in the database for only a finite set of logical functions. The table
+    below lists the supported combinations of function input count, function output
+    count, and gate set that are found in the database. **All** functions for a given
+    combination of inputs and outputs are supported (*e.g.*, all ``2**(2**3) = 256``
+    functions having three inputs and one output are supported). Gate sets are defined
+    in the `logical <https://pypi.org/project/logical/>`_ library).
+
+    +------------+-------------+-----------------------------+
+    | **inputs** | **outputs** | **gate set**                |
+    +------------+-------------+-----------------------------+
+    | 1          | 1           | ``{id_, not_, and_, or_}``  |
+    +------------+-------------+-----------------------------+
+    | 1          | 1           | ``{id_, not_, and_, xor_}`` |
+    +------------+-------------+-----------------------------+
+    | 1          | 1           | ``every``                   |
+    +------------+-------------+-----------------------------+
+    | 2          | 1           | ``{id_, not_, and_, or_}``  |
+    +------------+-------------+-----------------------------+
+    | 2          | 1           | ``{id_, not_, and_, xor_}`` |
+    +------------+-------------+-----------------------------+
+    | 2          | 1           | ``every``                   |
+    +------------+-------------+-----------------------------+
+    | 2          | 2           | ``{id_, not_, and_, or_}``  |
+    +------------+-------------+-----------------------------+
+    | 2          | 2           | ``{id_, not_, and_, xor_}`` |
+    +------------+-------------+-----------------------------+
+    | 2          | 2           | ``every``                   |
+    +------------+-------------+-----------------------------+
+    | 3          | 1           | ``{id_, not_, and_, or_}``  |
+    +------------+-------------+-----------------------------+
+    | 3          | 1           | ``{id_, not_, and_, xor_}`` |
+    +------------+-------------+-----------------------------+
+    | 3          | 1           | ``every``                   |
+    +------------+-------------+-----------------------------+
 
     The database supports retrieval using index notation, as well.
 
@@ -1824,37 +1892,6 @@ class circuitdb(dict):
 
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [logical.id_, logical.not_, logical.and_, logical.or_])
         [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 0, 0, 1), 0, 3), ((0, 1), 4)]
-
-        The combinations of circuit input count, circuit output count, and gate
-        set that are found in the database are enumerated in the table below
-
-        +------------+-------------+-------------------------------------------------------------+
-        | **inputs** | **outputs** | **gate set**                                                |
-        +------------+-------------+-------------------------------------------------------------+
-        | 1          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
-        +------------+-------------+-------------------------------------------------------------+
-        | 1          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
-        +------------+-------------+-------------------------------------------------------------+
-        | 1          | 1           | ``logical.every``                                           |
-        +------------+-------------+-------------------------------------------------------------+
-        | 2          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
-        +------------+-------------+-------------------------------------------------------------+
-        | 2          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
-        +------------+-------------+-------------------------------------------------------------+
-        | 2          | 1           | ``logical.every``                                           |
-        +------------+-------------+-------------------------------------------------------------+
-        | 2          | 2           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
-        +------------+-------------+-------------------------------------------------------------+
-        | 2          | 2           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
-        +------------+-------------+-------------------------------------------------------------+
-        | 2          | 2           | ``logical.every``                                           |
-        +------------+-------------+-------------------------------------------------------------+
-        | 3          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.or_}``  |
-        +------------+-------------+-------------------------------------------------------------+
-        | 3          | 1           | ``{logical.id_, logical.not_, logical.and_, logical.xor_}`` |
-        +------------+-------------+-------------------------------------------------------------+
-        | 3          | 1           | ``logical.every``                                           |
-        +------------+-------------+-------------------------------------------------------------+
 
         Any attempt to access the data with a malformed key raises an
         exception.
