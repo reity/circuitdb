@@ -1773,13 +1773,15 @@ class circuitdb(dict):
     is a conjunction (*i.e.*, ``(0, 0, 0, 1)``) of the gates at positions ``2`` and
     ``3`` in the overall list (*i.e.* , ``((0, 1),)`` and ``((0, 0, 0, 1), 0, 1)``).
 
-    **Gate Sets:** For any given logical function, it is possible to construct a
-    corresponding circuit using a variety of gate sets. For each logical function,
-    the database contains an example of a smallest circuit for each of a small
-    collection of sets of unary and binary gates. In the remaining examples below,
-    circuits for the function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. The unary
-    and binary logical operators represented by the gates in the circuit below are
-    found in the set of ``{logical.id_, logical.not_, logical.and_, logical.or_}``.
+    **Set of Permitted Gates:** For any given logical function, it is possible to
+    construct a corresponding circuit using a variety of gate sets. For each logical
+    function, the database contains an example of a smallest circuit for each of a
+    small collection of sets of unary and binary gates. The set of gates that can be
+    used to construct a circuit can be supplied using the ``operators`` parameter.
+    In the remaining examples below, circuits are retrieved for the specific function
+    ``(0, 0, 1, 0, 0, 0, 0, 1)``. The unary and binary logical operators represented
+    by the gates in the circuit below are drawn from the set of permitted gates
+    ``{logical.id_, logical.not_, logical.and_, logical.or_}``.
 
     >>> from logical import logical
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.or_]))
@@ -1796,42 +1798,53 @@ class circuitdb(dict):
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
     [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
 
-    **Supported Combinations:** Each logical function has a number of input values,
-    a number of output values, and gates drawn from a specific gate set. Entries
-    exist in the database for only a finite set of logical functions. The table
-    below lists the supported combinations of function input count, function output
-    count, and gate set that are found in the database. **All** functions for a given
-    combination of inputs and outputs are supported (*e.g.*, all ``2**(2**3) = 256``
-    functions having three inputs and one output are supported). Gate sets are defined
-    in the `logical <https://pypi.org/project/logical/>`_ library).
+    **Set of Gates to Minimize:** Multiple possible circuits that use gates from
+    a given gate set can be used to implement a logical function. Some of these
+    circuits may have more of one type of gate than other circuits. Thus, there
+    is an option to specify which gates "count" towards the size of the circuit
+    (with all other gates not counted for the purposes of comparing circuits
+    according to their size) using the ``minimize`` parameter.
 
-    +------------+-------------+-----------------------------+
-    | **inputs** | **outputs** | **gate set**                |
-    +------------+-------------+-----------------------------+
-    | 1          | 1           | ``{id_, not_, and_, or_}``  |
-    +------------+-------------+-----------------------------+
-    | 1          | 1           | ``{id_, not_, and_, xor_}`` |
-    +------------+-------------+-----------------------------+
-    | 1          | 1           | ``every``                   |
-    +------------+-------------+-----------------------------+
-    | 2          | 1           | ``{id_, not_, and_, or_}``  |
-    +------------+-------------+-----------------------------+
-    | 2          | 1           | ``{id_, not_, and_, xor_}`` |
-    +------------+-------------+-----------------------------+
-    | 2          | 1           | ``every``                   |
-    +------------+-------------+-----------------------------+
-    | 2          | 2           | ``{id_, not_, and_, or_}``  |
-    +------------+-------------+-----------------------------+
-    | 2          | 2           | ``{id_, not_, and_, xor_}`` |
-    +------------+-------------+-----------------------------+
-    | 2          | 2           | ``every``                   |
-    +------------+-------------+-----------------------------+
-    | 3          | 1           | ``{id_, not_, and_, or_}``  |
-    +------------+-------------+-----------------------------+
-    | 3          | 1           | ``{id_, not_, and_, xor_}`` |
-    +------------+-------------+-----------------------------+
-    | 3          | 1           | ``every``                   |
-    +------------+-------------+-----------------------------+
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]), {logical.and_})
+    [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 0), 2, 3), ((0, 0, 0, 1), 1, 4), ((0, 1), 5)]
+
+    **Supported Combinations:** Each logical function has a number of input values,
+    a number of output values, a set of permitted gates/**operators**, and a set of
+    gates to **minimize** in quantity. Entries exist in the database for only a finite
+    set of logical functions. The table below lists the supported combinations of
+    function input count, function output count, and gate set that are found in the
+    database. **All** functions for a given combination of inputs and outputs are
+    supported (*e.g.*, all ``2**(2**3) = 256`` functions having three inputs and one
+    output are supported). Gate sets are defined using operator constants found in
+    the `logical <https://pypi.org/project/logical/>`_ library).
+
+    +------------+-------------+-----------------------------+----------------------------+
+    | **inputs** | **outputs** | **operators**               | **minimize**               |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 1          | 1           | ``{id_, not_, and_, or_}``  | ``{id_, not_, and_, or_}`` |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 1          | 1           | ``{id_, not_, and_, xor_}`` | ``{and_}``                 |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 1          | 1           | ``every``                   | ``every``                  |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 2          | 1           | ``{id_, not_, and_, or_}``  | ``{id_, not_, and_, or_}`` |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 2          | 1           | ``{id_, not_, and_, xor_}`` | ``{and_}``                 |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 2          | 1           | ``every``                   | ``every``                  |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 2          | 2           | ``{id_, not_, and_, or_}``  | ``{id_, not_, and_, or_}`` |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 2          | 2           | ``{id_, not_, and_, xor_}`` | ``{and_}``                 |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 2          | 2           | ``every``                   | ``every``                  |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 3          | 1           | ``{id_, not_, and_, or_}``  | ``{id_, not_, and_, or_}`` |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 3          | 1           | ``{id_, not_, and_, xor_}`` | ``{and_}``                 |
+    +------------+-------------+-----------------------------+----------------------------+
+    | 3          | 1           | ``every``                   | ``every``                  |
+    +------------+-------------+-----------------------------+----------------------------+
 
     The database supports retrieval using index notation, as well.
 
