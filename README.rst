@@ -18,8 +18,8 @@ Data set of optimal circuits for Boolean functions that have low arity.
    :target: https://github.com/reity/circuitdb/actions/workflows/lint-test-cover-docs.yml
    :alt: GitHub Actions status.
 
-.. |coveralls| image:: https://coveralls.io/repos/github/reity/circuitdb/badge.svg?branch=master
-   :target: https://coveralls.io/github/reity/circuitdb?branch=master
+.. |coveralls| image:: https://coveralls.io/repos/github/reity/circuitdb/badge.svg?branch=main
+   :target: https://coveralls.io/github/reity/circuitdb?branch=main
    :alt: Coveralls test coverage summary.
 
 Package Installation and Usage
