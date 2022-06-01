@@ -12,6 +12,7 @@ setup(
     version=version,
     packages=[name,],
     install_requires=[
+        "bitlist~=0.7",
         "logical~=1.0"
     ],
     license="MIT",
