@@ -37,8 +37,13 @@ class _om(dict):
 
 # Set up containers for each (arity, coarity, operator set) combination
 # for which data is included.
-for i in range(1, 4):
+for i in range(0, 4):
     _db._data[i] = {}
+
+    if i == 0:
+        _db._data[i][1] = {
+            frozenset(logical.every): {}
+        }
 
     if i in range(1, 4):
         _db._data[i][1] = {
@@ -1175,6 +1180,15 @@ _db._data\
     })
 
 _db._data\
+    [0][1]\
+    [frozenset(logical.every)]\
+    [frozenset(logical.every)]\
+    = _om({
+        (0,): [(logical.nf_,), (logical.id_, 0)],
+        (1,): [(logical.nt_,), (logical.id_, 0)],
+    })
+
+_db._data\
     [1][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
@@ -1894,7 +1908,7 @@ class circuitdb(dict):
     represent the set of unary or binary gates to which circuits are restricted.
     Finally, the last level down, the keys represent logical functions.
 
-    >>> list(sorted(list(circuitdb.keys()))) == [1, 2, 3]
+    >>> list(sorted(list(circuitdb.keys()))) == [0, 1, 2, 3]
     True
     >>> ks = list(sorted(list(circuitdb[1][1].keys())))
     >>> ks[0] == frozenset({logical.and_, logical.or_, logical.not_, logical.id_})

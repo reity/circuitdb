@@ -5,13 +5,15 @@ with open("README.rst", "r") as fh:
 
 # The lines below can be parsed by `docs/conf.py`.
 name = "circuitdb"
-version = "1.2.0"
+version = "2.0.0"
 
 setup(
     name=name,
     version=version,
     packages=[name,],
-    install_requires=["logical~=0.3",],
+    install_requires=[
+        "logical~=1.0"
+    ],
     license="MIT",
     url="https://github.com/reity/circuitdb",
     author="Andrei Lapets",
