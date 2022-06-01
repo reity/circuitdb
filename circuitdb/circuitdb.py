@@ -21,7 +21,7 @@ class _om(dict):
     def __getitem__(self, truthtable):
         """
         Data retrieval wrapper with normalization. For validation of
-        truth table representation, use the `circuitdb` wrapper.
+        truth table representation, use the :obj:`circuitdb` wrapper.
         """
         # Normalize the truth table representation (no validation).
         if all(isinstance(e, tuple) for e in truthtable):
@@ -1740,11 +1740,12 @@ class circuitdb(dict):
     example of the smallest possible logical circuit (in terms of the number of
     unary and/or binary gates) for each possible logical function (from a finite
     set of functions). This class supports both a dictionary-like interface
-    (inherited from the ``dict`` type) and a function-like interface (via the
+    (inherited from the :obj:`dict` type) and a function-like interface (via the
     :obj:`__call__` method).
 
     **Logical Function Representation:** Logical functions are represented using
-    tuples, as in the `logical <https://pypi.org/project/logical/>`_ library. For
+    tuples in an identical manner to that of the :obj:`~logical.logical.logical`
+    class defined in the `logical <https://pypi.org/project/logical/>`_ library. For
     example, the logical function *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z*
     (*i.e.*, three-argument conjunction) is represented using a tuple representation
     of the output column of the truth table for the function (assuming that the

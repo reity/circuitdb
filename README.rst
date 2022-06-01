@@ -24,7 +24,7 @@ Data set of optimal circuits for Boolean functions that have low arity.
 
 Package Installation and Usage
 ------------------------------
-The package is available on `PyPI <https://pypi.org/project/circuitdb/>`_::
+The package is available on `PyPI <https://pypi.org/project/circuitdb>`_::
 
     python -m pip install circuitdb
 
@@ -54,7 +54,10 @@ All gates in the circuit below are found in the set ``{logical.id_, logical.not_
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]))
     [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 0), 2, 3), ((0, 0, 0, 1), 1, 4), ((0, 1), 5)]
 
-By default (or if the set of all gates ``logical.every`` is specified), a smallest circuit that can be built using *any* combination of unary or binary gates is returned::
+.. |logical_every| replace:: ``logical.every``
+.. _logical_every: https://logical.readthedocs.io/en/latest/_source/logical.html#logical.logical.logical.every
+
+By default (or if the set of all gates |logical_every|_ is specified), a smallest circuit that can be built using *any* combination of unary or binary gates is returned::
 
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
     [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
@@ -95,13 +98,13 @@ The version number format for this library and the changes to the library associ
 
 Publishing
 ----------
-This library can be published as a `package on PyPI <https://pypi.org/project/circuitdb/>`_ by a package maintainer. Install the `wheel <https://pypi.org/project/wheel/>`_ package, remove any old build/distribution files, and package the source into a distribution archive::
+This library can be published as a `package on PyPI <https://pypi.org/project/circuitdb>`_ by a package maintainer. Install the `wheel <https://pypi.org/project/wheel>`_ package, remove any old build/distribution files, and package the source into a distribution archive::
 
     python -m pip install wheel
     rm -rf dist *.egg-info
     python setup.py sdist bdist_wheel
 
-Next, install the `twine <https://pypi.org/project/twine/>`_ package and upload the package distribution archive to PyPI::
+Next, install the `twine <https://pypi.org/project/twine>`_ package and upload the package distribution archive to PyPI::
 
     python -m pip install twine
     python -m twine upload dist/*
