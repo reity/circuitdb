@@ -35,32 +35,50 @@ The library can be imported in the usual ways::
 
 Examples
 ^^^^^^^^
-This library provides a database that contains an (arbitrary but fixed) example of the smallest possible logical circuit (in terms of the number of unary and/or binary gates) for each possible logical function (from a finite set of functions). Logical functions are represented using tuples, as in the `logical <https://pypi.org/project/logical/>`_ library. In the example below, a circuit is retrieved for the function *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z* corresponding to the truth table ``(0, 0, 0, 0, 0, 0, 0, 1)``::
+
+.. |logical| replace:: ``logical``
+.. _logical: https://logical.readthedocs.io/en/latest/_source/logical.html#logical.logical.logical
+
+.. |circuit| replace:: ``circuit``
+.. _circuit: https://circuit.readthedocs.io/en/latest/_source/circuit.html#circuit.circuit.circuit
+
+.. |to_legible| replace:: ``to_legible``
+.. _to_legible: https://circuit.readthedocs.io/en/latest/_source/circuit.html#circuit.circuit.gates.to_legible
+
+This library provides a database that contains an (arbitrary but fixed) example of the smallest possible logical circuit (in terms of the number of unary and/or binary gates) for each possible logical function (from a finite set of functions). This library represents logical functions using tuples, in accordance with the conventions of the |logical|_ class defined in the `logical <https://pypi.org/project/logical/>`__ library. In the example below, a circuit is retrieved for the function *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z* corresponding to the truth table ``(0, 0, 0, 0, 0, 0, 0, 1)``. Retrieved circuits are represented as instances of the |circuit|_ class defined in the `circuit <https://pypi.org/project/circuit/>`__ library; in the example below, the |to_legible|_ method of the circuit's gate list is used to retrieve a human-readable representation of the circuit::
 
     >>> from circuitdb import circuitdb
-    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
-    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((0, 0, 0, 1), 2, 3), ((0, 1), 4)]
+    >>> c = circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
+    >>> c.gate.to_legible() # Use method belonging to circuit object's gate list to inspect the circuit.
+    (('id',), ('id',), ('id',), ('and', 0, 1), ('and', 2, 3), ('id', 4))
 
-The representation of the circuit above consists of a list of unary and binary gates. Each gate is represented as a tuple. The first entry in each gate tuple is the logical function corresponding to that gate (represented using the `logical <https://pypi.org/project/logical/>`_ library). The remaining entries in the gate tuple are the indices of the input gates to that gate. For example, the entry ``((0, 0, 0, 1), 2, 3)`` represents a gate that is a conjunction of the gates at positions ``2`` and ``3`` in the overall list.
+The human-readable representation of the circuit above consists of a list of unary and binary gates. Each gate is represented as a tuple. The first entry in each gate tuple is the name of the logical function corresponding to that gate. The remaining entries in the gate tuple are the indices of the input gates to that gate. For example, the entry ``('and', 2, 3)`` represents a gate that is a conjunction of the gates that have indices ``2`` and ``3`` in the overall list of gates. In accordance with the requirements of the |circuit|_ class, the three inputs are represented using identity gates that have no input indices.
 
-For any given logical function, it is possible to construct a corresponding circuit using a variety of gate sets. For each function, the database contains an example of a smallest circuit for each of a small collection of sets of unary and binary gates. In the remaining examples below, circuits for the function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. All gates in the circuit below are found in the set ``{logical.id_, logical.not_, logical.and_, logical.or_}``::
+For any given logical function, it is possible to construct a corresponding circuit using a variety of gate sets. For each function, the database contains an example of a smallest circuit for each of a small collection of sets of unary and binary gates. In the remaining examples below, circuits for the function ``(0, 0, 1, 0, 0, 0, 0, 1)`` are retrieved. All gates in the circuit retrieved below can be found in the set ``{logical.id_, logical.not_, logical.and_, logical.or_}``::
 
     >>> from logical import logical
-    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.or_]))
-    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 2), ((0, 1, 1, 1), 0, 2), ((1, 0), 4), ((0, 1, 1, 1), 3, 5), ((0, 0, 0, 1), 1, 6), ((0, 1), 7)]
+    >>> c = circuitdb(
+    ...     (0, 0, 1, 0, 0, 0, 0, 1),
+    ...     frozenset([logical.id_, logical.not_, logical.and_, logical.or_])
+    ... )
+    >>> c.gate.to_legible()
+    (('id',), ('id',), ('id',), ('and', 0, 2), ('or', 0, 2), ('not', 4), ('or', 3, 5), ('and', 1, 6), ('id', 7))
 
-All gates in the circuit below are found in the set ``{logical.id_, logical.not_, logical.and_, logical.xor_}``::
+On the other hand, all gates in the circuit retrieved below can be found in the set ``{logical.id_, logical.not_, logical.and_, logical.xor_}``::
 
-    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]))
-    [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 0), 2, 3), ((0, 0, 0, 1), 1, 4), ((0, 1), 5)]
+    >>> circuitdb(
+    ...     (0, 0, 1, 0, 0, 0, 0, 1),
+    ...     frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])
+    ... ).gate.to_legible()
+    (('id',), ('id',), ('id',), ('not', 0), ('xor', 2, 3), ('and', 1, 4), ('id', 5))
 
 .. |logical_every| replace:: ``logical.every``
 .. _logical_every: https://logical.readthedocs.io/en/latest/_source/logical.html#logical.logical.logical.every
 
 By default (or if the set of all gates |logical_every|_ is specified), a smallest circuit that can be built using *any* combination of unary or binary gates is returned::
 
-    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
-    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1)).gate.to_legible()
+    (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
 
 Documentation
 -------------

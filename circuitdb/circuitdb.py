@@ -8,6 +8,7 @@ import math
 import base64
 import bitlist
 import logical
+import circuit
 
 # The private dictionary that represents the data set.
 class _db(dict):
@@ -16,9 +17,44 @@ class _db(dict):
     """
     _data = {}
 
-class _om(list):
+class record(str):
     """
-    Wrapper class for a base-level operation-to-circuit map.
+    Wrapper class for an individual record (*i.e.*, encoded data corresponding to a
+    circuit).
+    """
+    def to_circuit(self, truthtable):
+        """
+        Decode this record into a circuit.
+        """
+        # Create table for converting encoded operator to actual operator.
+        integer_to_operator = list(sorted(list(logical.every)))
+
+        # Parse the gate information from the encoded representation.
+        bs = list(base64.standard_b64decode(self))
+        (j, ts) = (0, [])
+        while j < len(bs):
+            operator = integer_to_operator[bs[j]]
+            ts.append((operator, bs[j + 1: j + 1 + operator.arity()]))
+            j += 1 + operator.arity()
+
+        # Build the circuit object programmatically.
+        arity = int(math.log2(len(truthtable)))
+        coarity = len(truthtable[0]) if isinstance(truthtable[0], tuple) else 1
+        c = circuit.circuit()
+        gs = []
+        for _ in range(arity): # Input gates.
+            gs.append(c.gate(logical.id_, [], is_input=True))
+        for entry in ts[0:-coarity]: # Internal gates.
+            gs.append(c.gate(entry[0], [gs[k] for k in entry[1]]))
+        for entry in ts[-coarity:]: # Output gates.
+            c.gate(entry[0], [gs[k] for k in entry[1]], is_output=True)
+
+        return c
+
+class records(list):
+    """
+    Wrapper class for a base-level operation-to-circuit map (corresponding to a given
+    arity, coarity, operator set, and operator set to minimize).
     """
     def __getitem__(self, truthtable):
         """
@@ -39,18 +75,8 @@ class _om(list):
             truthtable = list(map(int, truthtable))
             index = int(bitlist.bitlist(truthtable))
 
-        # Retrieve and decode the circuit data.
-        operator_table = list(sorted(list(logical.every)))
-        bs = list(base64.standard_b64decode(super().__getitem__(index)))
-        (j, gs) = (0, [])
-        while j < len(bs):
-            operator = operator_table[bs[j]]
-            gs.append(tuple([operator] + bs[j + 1: j + 1 + operator.arity()]))
-            j += 1 + operator.arity()
-
-        # Add the input identity gates and return the circuit description.
-        arity = int(math.log2(len(truthtable)))
-        return [((0, 1),) for _ in range(arity)] + gs
+        # Retrieve, decode, and return the circuit data.
+        return record(super().__getitem__(index)).to_circuit(truthtable)
 
 # Set up containers for each (arity, coarity, operator set) combination
 # for which data is included.
@@ -80,7 +106,7 @@ _db._data\
     [1][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = _om([
+    = records([
         'DAADAAEGAg==',
         'BgA=',
         'DAAGAQ==',
@@ -91,7 +117,7 @@ _db._data\
     [2][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = _om([
+    = records([
         'DAADAAIGAw==',
         'AwABBgI=',
         'DAEDAAIGAw==',
@@ -114,7 +140,7 @@ _db._data\
     [2][2]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = _om([
+    = records([
         'DAADAAIGAwYD',
         'DAADAAEDAAIGBAYD',
         'DAADAAEDAAIGAwYE',
@@ -377,7 +403,7 @@ _db._data\
     [3][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = _om([
+    = records([
         'DAADAAMGBA==',
         'AwABAwIDBgQ=',
         'DAIDAAEDAwQGBQ==',
@@ -640,7 +666,7 @@ _db._data\
     [1][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = _om([
+    = records([
         'DAAMAAkBAgYD',
         'BgA=',
         'DAAGAQ==',
@@ -651,7 +677,7 @@ _db._data\
     [2][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = _om([
+    = records([
         'DAAMAAkCAwYE',
         'AwABBgI=',
         'DAEDAAIGAw==',
@@ -674,7 +700,7 @@ _db._data\
     [2][2]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = _om([
+    = records([
         'DAADAAIGAwYD',
         'DAADAAEDAAIGBAYD',
         'DAADAAEDAAIGAwYE',
@@ -937,7 +963,7 @@ _db._data\
     [3][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = _om([
+    = records([
         'DAAMAAkDBAYF',
         'AwABAwIDBgQ=',
         'DAIDAAEDAwQGBQ==',
@@ -1200,7 +1226,7 @@ _db._data\
     [0][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = _om([
+    = records([
         'AAYA',
         'CwYA',
     ])
@@ -1209,7 +1235,7 @@ _db._data\
     [1][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = _om([
+    = records([
         'AQAGAQ==',
         'BgA=',
         'DAAGAQ==',
@@ -1220,7 +1246,7 @@ _db._data\
     [2][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = _om([
+    = records([
         'AgABBgI=',
         'AwABBgI=',
         'BAABBgI=',
@@ -1243,7 +1269,7 @@ _db._data\
     [2][2]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = _om([
+    = records([
         'AQAGAgYC',
         'AgABAwABBgIGAw==',
         'AgABAwABBgMGAg==',
@@ -1506,7 +1532,7 @@ _db._data\
     [3][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = _om([
+    = records([
         'AQAGAw==',
         'AwABAwIDBgQ=',
         'AwABBwIDBgQ=',
@@ -1782,28 +1808,35 @@ class circuitdb(dict):
     of the output column of the truth table for the function (assuming that the
     possible inputs are in ascending dictionary order): ``(0, 0, 0, 0, 0, 0, 0, 1)``.
 
-    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
-    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((0, 0, 0, 1), 2, 3), ((0, 1), 4)]
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1)).gate.to_legible()
+    (('id',), ('id',), ('id',), ('and', 0, 1), ('and', 2, 3), ('id', 4))
 
     For logical functions having multiple outputs, the entries in the tuple may
     themselves be tuples. For example, *f* (*x*, *y*) = (*y*, *x*) is represented
     using the tuple ``((0, 0), (1, 0), (0, 1), (1, 1))``.
 
-    >>> circuitdb(((0, 0), (1, 0), (0, 1), (1, 1)))
-    [((0, 1),), ((0, 1),), ((0, 1), 1), ((0, 1), 0)]
+    >>> circuitdb(((0, 0), (1, 0), (0, 1), (1, 1))).gate.to_legible()
+    (('id',), ('id',), ('id', 1), ('id', 0))
 
-    **Circuit Representation:** The representation of a circuit consists of a list
-    of unary and binary gates. Each gate is represented as a tuple. The first entry
-    in each gate tuple is the logical function corresponding to that gate (represented
-    as in the `logical <https://pypi.org/project/logical/>`_ library). The remaining
+    **Circuit Representation:** Retrieved circuits are instances of the
+    :obj:`~circuit.circuit.circuit` class that is defined in the
+    `circuit <https://pypi.org/project/circuit/>`_ library. In order to make this
+    documentation human-readible, the examples include an invocation of the
+    :obj:`~circuit.circuit.gates.to_legible` method belonging to the gate list
+    associated with the returned :obj:`~circuit.circuit.circuit` object. This
+    representation of a circuit consists of a list of unary and binary gates. Each
+    gate is represented as a tuple. The first entry in each gate tuple is the name
+    of the logical function corresponding to that gate (as defined in the
+    :obj:`~logical.logical.logical.names` class attribute in the
+    `logical <https://pypi.org/project/logical/>`_ library). The remaining
     entries in the gate tuple are the indices of the input gates to that gate.
 
-    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1))
-    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((0, 0, 0, 1), 2, 3), ((0, 1), 4)]
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1)).gate.to_legible()
+    (('id',), ('id',), ('id',), ('and', 0, 1), ('and', 2, 3), ('id', 4))
 
-    In the circuit above, the entry ``((0, 0, 0, 1), 2, 3)`` represents a gate that
-    is a conjunction (*i.e.*, ``(0, 0, 0, 1)``) of the gates at positions ``2`` and
-    ``3`` in the overall list (*i.e.* , ``((0, 1),)`` and ``((0, 0, 0, 1), 0, 1)``).
+    In the circuit above, the entry ``('and', 2, 3)`` represents a gate that
+    is a conjunction of the gates at positions ``2`` and ``3`` in the overall list
+    (*i.e.* , ``('id',)`` and ``('and', 0, 1)``).
 
     **Set of Permitted Gates:** For any given logical function, it is possible to
     construct a corresponding circuit using a variety of gate sets. For each logical
@@ -1816,63 +1849,67 @@ class circuitdb(dict):
     ``{logical.id_, logical.not_, logical.and_, logical.or_}``.
 
     >>> from logical import logical
-    >>> for c in circuitdb(
+    >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
     ...     frozenset([logical.id_, logical.not_, logical.and_, logical.or_])
-    ... ):
-    ...     print(c)
-    ((0, 1),)
-    ((0, 1),)
-    ((0, 1),)
-    ((0, 0, 0, 1), 0, 2)
-    ((0, 1, 1, 1), 0, 2)
-    ((1, 0), 4)
-    ((0, 1, 1, 1), 3, 5)
-    ((0, 0, 0, 1), 1, 6)
-    ((0, 1), 7)
+    ... ).gate.to_legible():
+    ...     print(g)
+    ('id',)
+    ('id',)
+    ('id',)
+    ('and', 0, 2)
+    ('or', 0, 2)
+    ('not', 4)
+    ('or', 3, 5)
+    ('and', 1, 6)
+    ('id', 7)
 
     All gates in the circuit below are found in the set
     ``{logical.id_, logical.not_, logical.and_, logical.xor_}``.
 
-    >>> for c in circuitdb(
+    >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
     ...     frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])
-    ... ):
-    ...     print(c)
-    ((0, 1),)
-    ((0, 1),)
-    ((0, 1),)
-    ((1, 0), 0)
-    ((0, 1, 1, 0), 2, 3)
-    ((0, 0, 0, 1), 1, 4)
-    ((0, 1), 5)
+    ... ).gate.to_legible():
+    ...     print(g)
+    ('id',)
+    ('id',)
+    ('id',)
+    ('not', 0)
+    ('xor', 2, 3)
+    ('and', 1, 4)
+    ('id', 5)
 
-    By default (or if the set of all gates :obj:`logical.every` is specified), a
-    smallest circuit that can be built using *any* combination of unary or binary
-    gates is returned.
+    By default (or if the set of *all* gates is supplied using the constant
+    :obj:`~logical.logical.logical.every` that is defined in the
+    `logical <https://pypi.org/project/logical/>`_), a smallest circuit that can
+    be built using *any* combination of unary or binary gates is returned.
 
-    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1))
-    [((0, 1),), ((0, 1),), ((0, 1),), ((0, 1, 1, 0), 0, 2), ((0, 0, 1, 0), 1, 3), ((0, 1), 4)]
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1)).gate.to_legible()
+    (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), logical.every).gate.to_legible()
+    (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
 
     **Set of Gates to Minimize:** Multiple possible circuits that use gates from
     a given gate set can be used to implement a logical function. Some of these
     circuits may have more of one type of gate than other circuits. Thus, there
-    is an option to specify which gates "count" towards the size of the circuit
-    (with all other gates not counted for the purposes of comparing circuits
-    according to their size) using the ``minimize`` parameter.
+    is an option to specify using the ``minimize`` parameter *which* gates *do*
+    contribute to the *size* of the circuit (*i.e.*, the metric that is being
+    minimized). All other gates are *not counted* for the purposes of comparing
+    circuits according to their size.
 
-    >>> for c in circuitdb(
+    >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
     ...     frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]), {logical.and_}
-    ... ):
-    ...     print(c)
-    ((0, 1),)
-    ((0, 1),)
-    ((0, 1),)
-    ((1, 0), 0)
-    ((0, 1, 1, 0), 2, 3)
-    ((0, 0, 0, 1), 1, 4)
-    ((0, 1), 5)
+    ... ).gate.to_legible():
+    ...     print(g)
+    ('id',)
+    ('id',)
+    ('id',)
+    ('not', 0)
+    ('xor', 2, 3)
+    ('and', 1, 4)
+    ('id', 5)
 
     **Supported Combinations:** Each logical function has a number of input values,
     a number of output values, a set of permitted gates/**operators**, and a set of
@@ -1914,10 +1951,10 @@ class circuitdb(dict):
 
     The database supports retrieval using index notation, as well.
 
-    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][(0, 0)]
-    [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
-    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][((0,), (0,))]
-    [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
+    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][(0, 0)].gate.to_legible()
+    (('id',), ('uf', 0), ('id', 1))
+    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][((0,), (0,))].gate.to_legible()
+    (('id',), ('uf', 0), ('id', 1))
 
     The top-level database instance has keys that represent to the number of
     inputs of the logical function. The second level down, the keys represent
@@ -1930,8 +1967,8 @@ class circuitdb(dict):
     >>> ks = list(sorted(list(circuitdb[1][1].keys())))
     >>> ks[0] == frozenset({logical.and_, logical.or_, logical.not_, logical.id_})
     True
-    >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)]
-    [((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 1, 1, 1), 0, 2), ((0, 1), 3)]
+    >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)].gate.to_legible()
+    (('id',), ('id',), ('not', 0), ('or', 0, 2), ('id', 3))
 
     Note that the internal representation organizes the circuits by arity.
 
@@ -1953,24 +1990,27 @@ class circuitdb(dict):
         functions having one output are represented using a tuple of
         integers (or booleans), or a tuple of one-element tuples.
 
-        >>> circuitdb((0, 0))
-        [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
-        >>> circuitdb(((0,), (0,)))
-        [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
-        >>> circuitdb((False, False))
-        [((0, 1),), ((0, 0), 0), ((0, 1), 1)]
+        >>> circuitdb((0, 0)).gate.to_legible()
+        (('id',), ('uf', 0), ('id', 1))
+        >>> circuitdb(((0,), (0,))).gate.to_legible()
+        (('id',), ('uf', 0), ('id', 1))
+        >>> circuitdb((False, False)).gate.to_legible()
+        (('id',), ('uf', 0), ('id', 1))
 
         A logical function having a vector of two outputs is represented using
         a tuple of two-element tuples.
 
-        >>> circuitdb(((1, 0), (1, 0), (1, 0), (0, 1)))
-        [((0, 1),), ((0, 1),), ((0, 0, 0, 1), 0, 1), ((1, 0), 2), ((0, 1), 3), ((0, 1), 2)]
+        >>> circuitdb(((1, 0), (1, 0), (1, 0), (0, 1))).gate.to_legible()
+        (('id',), ('id',), ('and', 0, 1), ('not', 2), ('id', 3), ('id', 2))
 
         It is also possible to retrieve a smallest circuit that only uses gates
         from a specific set of gates.
 
-        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [logical.id_, logical.not_, logical.and_, logical.or_])
-        [((0, 1),), ((0, 1),), ((0, 1),), ((1, 0), 0), ((0, 0, 0, 1), 0, 3), ((0, 1), 4)]
+        >>> circuitdb(
+        ...     (0, 0, 0, 0, 0, 0, 0, 0),
+        ...     [logical.id_, logical.not_, logical.and_, logical.or_]
+        ... ).gate.to_legible()
+        (('id',), ('id',), ('id',), ('not', 0), ('and', 0, 3), ('id', 4))
 
         Any attempt to access the data with a malformed key raises an
         exception.
@@ -2044,22 +2084,12 @@ class circuitdb(dict):
         Additional exhaustive tests are presented below.
 
         >>> from itertools import product
-        >>> def eval(c, v):
-        ...     m = list(v)
-        ...     for e in c[len(m):]:
-        ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
-        ...     return m[-1]
-        >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0, 1]]*a)])
+        >>> evals = lambda c, a: tuple([c.evaluate(v)[0] for v in product(*[[0, 1]]*a)])
         >>> _d = {i: _db._data[i][1] for i in range(1,4)}
         >>> aoms = [(a, o, m) for a in _d for o in _d[a] for m in _d[a][o]]
         >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[[0, 1]]*(2**a))) for (a, o, m) in aoms)
         True
-        >>> def eval(c, v):
-        ...     m = list(v)
-        ...     for e in c[len(m):]:
-        ...         m.append(e[0](*[m[e[i]] for i in range(1, len(e))]))
-        ...     return tuple(m[-2:])
-        >>> evals = lambda c, a: tuple([eval(c, v) for v in product(*[[0, 1]]*a)])
+        >>> evals = lambda c, a: tuple([tuple(c.evaluate(v)) for v in product(*[[0, 1]]*a)])
         >>> aoms = [(a, o, m) for a in [2] for o in _db._data[a][2] for m in _db._data[a][2][o]]
         >>> pairs = [(0, 0), (0, 1), (1, 0), (0, 1)]
         >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[pairs]*(2**a))) for (a, o, m) in aoms)
@@ -2150,9 +2180,9 @@ class circuitdb(dict):
                 'for specified operators and minimization criteria'
             )
 
-        # Wrapping result in list constructor ensures that users do not inadvertently
-        # modify the data set entries.
-        return list(_db._data[arity][coarity][frozenset(operators)][frozenset(minimize)][truthtable])
+        # The bracket notation below is overloaded in the :obj:`records.__getitem__` method,
+        # so there is no risk of users modifying the data.
+        return _db._data[arity][coarity][frozenset(operators)][frozenset(minimize)][truthtable]
 
 # Exported object with function-like and dictionary-like interfaces
 # hides the class definition that is used to construct it.

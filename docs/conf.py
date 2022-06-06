@@ -69,7 +69,8 @@ autodoc_preserve_defaults = True
 # Allow references to classes defined in the Python documentation.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'logical': ('https://logical.readthedocs.io/en/latest', None)
+    'logical': ('https://logical.readthedocs.io/en/latest', None),
+    'circuit': ('https://circuit.readthedocs.io/en/latest', None)
 }
 
 

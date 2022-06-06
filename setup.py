@@ -13,7 +13,8 @@ setup(
     packages=[name,],
     install_requires=[
         "bitlist~=0.7",
-        "logical~=1.0"
+        "logical~=1.0",
+        "circuit~=1.1"
     ],
     license="MIT",
     url="https://github.com/reity/circuitdb",
