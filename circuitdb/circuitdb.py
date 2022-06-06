@@ -2,6 +2,7 @@
 Data set of optimal circuits for Boolean functions that have
 specific low arities.
 """
+from __future__ import annotations
 import doctest
 import os
 import math
@@ -22,11 +23,45 @@ class record(str):
     Wrapper class for an individual record (*i.e.*, encoded data corresponding to a
     circuit).
     """
-    def to_circuit(self, truthtable):
+    @staticmethod
+    def from_circuit(circuit: circuit.circuit) -> record: # pylint: disable=W0621
         """
-        Decode this record into a circuit.
+        Encode a :obj:`~circuit.circuit.circuit` object and construct a record that
+        represents it.
+
+        >>> c = circuit.circuit()
+        >>> g0 = c.gate(logical.id_, is_input=True)
+        >>> g1 = c.gate(logical.id_, is_input=True)
+        >>> g2 = c.gate(logical.id_, is_input=True)
+        >>> g3 = c.gate(logical.xor_, [g0, g2])
+        >>> g4 = c.gate(logical.nimp_, [g1, g3])
+        >>> g5 = c.gate(logical.id_, [g4], is_output=True)
+        >>> record.from_circuit(c)
+        'CQACBAEDBgQ='
         """
-        # Create table for converting encoded operator to actual operator.
+        # Create table for converting an encoded operator into an actual operator value.
+        integer_to_operator = list(sorted(list(logical.every)))
+
+        # Convert gate data into a list of integers. Note that the number of gates
+        # (including input and output gates) must not exceed 256.
+        bs = []
+        for g in circuit.gate:
+            if not g.is_input:
+                bs.extend(
+                    [integer_to_operator.index(g.operation)] + \
+                    [circuit.gate.index(gi) for gi in g.inputs]
+                )
+
+        return record(base64.standard_b64encode(bytes(bs)).decode('utf-8'))
+
+    def to_circuit(self: record, truthtable: tuple) -> circuit.circuit:
+        """
+        Decode this record into a :obj:`~circuit.circuit.circuit` object.
+
+        >>> record.to_circuit('CQACBAEDBgQ=', (0, 0, 1, 0, 0, 0, 0, 1)).gate.to_legible()
+        (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
+        """
+        # Create table for converting an encoded operator into an actual operator value.
         integer_to_operator = list(sorted(list(logical.every)))
 
         # Parse the gate information from the encoded representation.
@@ -56,10 +91,12 @@ class records(list):
     Wrapper class for a base-level operation-to-circuit map (corresponding to a given
     arity, coarity, operator set, and operator set to minimize).
     """
-    def __getitem__(self, truthtable):
+    def __getitem__(self: records, truthtable: tuple) -> record:
         """
-        Data retrieval wrapper with normalization. For validation of
-        truth table representation, use the :obj:`circuitdb` wrapper.
+        Data retrieval wrapper that performs normalization of the truth table,
+        but does not check that it has a correct structure. To ensure the supplied
+        truth table representation is valid, the :obj:`circuitdb.__call__` should
+        be used to retrieve circuit data.
         """
         # Normalize the truth table representation (no validation) and
         # convert it into an index into the data.
@@ -1980,7 +2017,9 @@ class circuitdb(dict):
     >>> all(len(_d[3][o][m]) == 256 for o in _d[3] for m in _d[3][o])
     True
     """
-    def __call__(self, truthtable, operators=None, minimize=None):
+    def __call__(
+        self: circuitdb, truthtable: tuple, operators: set = None, minimize: set = None
+    ) -> circuit.circuit:
         """
         Function-like interface for the circuit database, with user-friendly
         defaults for retrieving circuit data.
