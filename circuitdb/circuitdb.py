@@ -17,7 +17,7 @@ class _db(dict):
     """
     Wrapper class for a circuit data set instance.
     """
-    _data = {}
+    data = {}
 
 class record(bytes):
     """
@@ -191,28 +191,28 @@ class records(list):
 # Set up containers for each (arity, coarity, operator set) combination
 # for which data is included.
 for i in range(0, 4):
-    _db._data[i] = {}
+    _db.data[i] = {}
 
     if i == 0:
-        _db._data[i][1] = {
+        _db.data[i][1] = {
             frozenset(logical.every): {}
         }
 
     if i in range(1, 4):
-        _db._data[i][1] = {
+        _db.data[i][1] = {
             frozenset([logical.id_, logical.not_, logical.and_, logical.or_]): {},
             frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]): {},
             frozenset(logical.every): {}
         }
 
     if i == 2:
-        _db._data[i][2] = {
+        _db.data[i][2] = {
             frozenset([logical.id_, logical.not_, logical.and_, logical.or_]): {},
             frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]): {},
             frozenset(logical.every): {}
         }
 
-_db._data \
+_db.data \
     [1][1] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
@@ -223,7 +223,7 @@ _db._data \
         'DAAKAAEGAg==',
     ]))
 
-_db._data \
+_db.data \
     [2][1] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
@@ -246,19 +246,19 @@ _db._data \
         'DAAKAAIGAw==',
     ]))
 
-_db._data \
+_db.data \
     [2][2] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
     = records.from_file('2_2_id-not-and-or_id-not-and-or')
 
-_db._data \
+_db.data \
     [3][1] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
     = records.from_file('3_1_id-not-and-or_id-not-and-or')
 
-_db._data \
+_db.data \
     [1][1] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
     [frozenset([logical.and_])] \
@@ -269,7 +269,7 @@ _db._data \
         'DAAJAAEGAg==',
     ]))
 
-_db._data \
+_db.data \
     [2][1] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
     [frozenset([logical.and_])] \
@@ -292,19 +292,19 @@ _db._data \
         'DAAJAAIGAw==',
     ]))
 
-_db._data \
+_db.data \
     [2][2] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
     [frozenset([logical.and_])] \
     = records.from_file('2_2_id-not-and-xor_and')
 
-_db._data \
+_db.data \
     [3][1] \
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
     [frozenset([logical.and_])] \
     = records.from_file('3_1_id-not-and-xor_and')
 
-_db._data \
+_db.data \
     [0][1] \
     [frozenset(logical.every)] \
     [frozenset(logical.every)] \
@@ -313,7 +313,7 @@ _db._data \
         'CwYA',
     ]))
 
-_db._data \
+_db.data \
     [1][1] \
     [frozenset(logical.every)] \
     [frozenset(logical.every)] \
@@ -324,7 +324,7 @@ _db._data \
         'EQAGAQ==',
     ]))
 
-_db._data \
+_db.data \
     [2][1] \
     [frozenset(logical.every)] \
     [frozenset(logical.every)] \
@@ -347,13 +347,13 @@ _db._data \
         'FQABBgI=',
     ]))
 
-_db._data \
+_db.data \
     [2][2] \
     [frozenset(logical.every)] \
     [frozenset(logical.every)] \
     = records.from_file('2_2_every_every')
 
-_db._data \
+_db.data \
     [3][1] \
     [frozenset(logical.every)] \
     [frozenset(logical.every)] \
@@ -519,9 +519,10 @@ class circuitdb(dict):
 
     The database supports retrieval using index notation, as well.
 
-    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][(0, 0)].gate.to_legible()
+    >>> ops = frozenset(logical.every)
+    >>> circuitdb[1][1][ops][ops][(0, 0)].gate.to_legible()
     (('id',), ('uf', 0), ('id', 1))
-    >>> circuitdb[1][1][frozenset(logical.every)][frozenset(logical.every)][((0,), (0,))].gate.to_legible()
+    >>> circuitdb[1][1][ops][ops][((0,), (0,))].gate.to_legible()
     (('id',), ('uf', 0), ('id', 1))
 
     The top-level database instance has keys that represent to the number of
@@ -540,7 +541,7 @@ class circuitdb(dict):
 
     Note that the internal representation organizes the circuits by arity.
 
-    >>> _d = {i: _db._data[i][1] for i in range(1,4)}
+    >>> _d = {i: _db.data[i][1] for i in range(1,4)}
     >>> all(len(_d[1][o][m]) == 4 for o in _d[1] for m in _d[1][o])
     True
     >>> all(len(_d[2][o][m]) == 16 for o in _d[2] for m in _d[2][o])
@@ -548,7 +549,7 @@ class circuitdb(dict):
     >>> all(len(_d[3][o][m]) == 256 for o in _d[3] for m in _d[3][o])
     True
     """
-    def __call__(
+    def __call__( # pylint: disable=R0912
         self: circuitdb, truthtable: tuple, operators: set = None, minimize: set = None
     ) -> circuit.circuit:
         """
@@ -596,15 +597,18 @@ class circuitdb(dict):
         >>> circuitdb(('abc', 'xyz'))
         Traceback (most recent call last):
           ...
-        TypeError: truth table must contain boolean values, integers in the range [0, 1], or tuples of such
+        TypeError: truth table must contain boolean values, integers in the range [0, 1], or \
+tuples of such
         >>> circuitdb((('abc', 'xyz')))
         Traceback (most recent call last):
           ...
-        TypeError: truth table must contain boolean values, integers in the range [0, 1], or tuples of such
+        TypeError: truth table must contain boolean values, integers in the range [0, 1], or \
+tuples of such
         >>> circuitdb(((1, 'abc'), (1, 0), (1, 0), (0, 1)))
         Traceback (most recent call last):
           ...
-        TypeError: truth table must contain boolean values, integers in the range [0, 1], or tuples of such
+        TypeError: truth table must contain boolean values, integers in the range [0, 1], or \
+tuples of such
         >>> circuitdb(((), ()))
         Traceback (most recent call last):
           ...
@@ -641,28 +645,37 @@ class circuitdb(dict):
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, 123)
         Traceback (most recent call last):
           ...
-        TypeError: collection of operators the number of which to minimize must be a set, frozenset, list, or tuple
+        TypeError: collection of operators the number of which to minimize must be a set, \
+frozenset, list, or tuple
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1, 0)])
         Traceback (most recent call last):
           ...
-        ValueError: collection of operators the number of which to minimize must contain only valid operators
+        ValueError: collection of operators the number of which to minimize must contain only \
+valid operators
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1)])
         Traceback (most recent call last):
           ...
-        ValueError: no entries for functions of arity 3 for specified operators and minimization criteria
+        ValueError: no entries for functions of arity 3 for specified operators and \
+minimization criteria
 
         Additional exhaustive tests are presented below.
 
         >>> from itertools import product
         >>> evals = lambda c, a: tuple([c.evaluate(v)[0] for v in product(*[[0, 1]]*a)])
-        >>> _d = {i: _db._data[i][1] for i in range(1,4)}
+        >>> _d = {i: _db.data[i][1] for i in range(1,4)}
         >>> aoms = [(a, o, m) for a in _d for o in _d[a] for m in _d[a][o]]
-        >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[[0, 1]]*(2**a))) for (a, o, m) in aoms)
+        >>> all(
+        ...     all(t == evals(circuitdb(t, o, m), a) for t in product(*[[0, 1]]*(2**a)))
+        ...     for (a, o, m) in aoms
+        ... )
         True
         >>> evals = lambda c, a: tuple([tuple(c.evaluate(v)) for v in product(*[[0, 1]]*a)])
-        >>> aoms = [(a, o, m) for a in [2] for o in _db._data[a][2] for m in _db._data[a][2][o]]
+        >>> aoms = [(a, o, m) for a in [2] for o in _db.data[a][2] for m in _db.data[a][2][o]]
         >>> pairs = [(0, 0), (0, 1), (1, 0), (0, 1)]
-        >>> all(all(t == evals(circuitdb(t, o, m), a) for t in product(*[pairs]*(2**a))) for (a, o, m) in aoms)
+        >>> all(
+        ...     all(t == evals(circuitdb(t, o, m), a) for t in product(*[pairs]*(2**a)))
+        ...     for (a, o, m) in aoms
+        ... )
         True
         """
         # Ensure the function truth table is a tuple.
@@ -672,9 +685,15 @@ class circuitdb(dict):
         # Ensure that the function truth table has valid entry types.
         if all(isinstance(e, tuple) for e in truthtable):
             if not all(all(b in [0, 1, False, True] for b in e) for e in truthtable):
-                raise TypeError('truth table must contain boolean values, integers in the range [0, 1], or tuples of such')
+                raise TypeError(
+                    'truth table must contain boolean values, integers in the range [0, 1], ' + \
+                    'or tuples of such'
+                )
         elif not all(e in [0, 1, False, True] for e in truthtable):
-            raise TypeError('truth table must contain boolean values, integers in the range [0, 1], or tuples of such')
+            raise TypeError(
+                'truth table must contain boolean values, integers in the range [0, 1], ' + \
+                'or tuples of such'
+            )
 
         # Determine the arity of the function represented by the truth table.
         arity = int(math.log2(len(truthtable)))
@@ -691,16 +710,16 @@ class circuitdb(dict):
                 coarity = list(ls)[0]
                 if coarity < 1:
                     raise ValueError('truth table entries must each represent at least one value')
-                elif coarity == 1: # Convert tuple of singleton tuples into simple tuple.
+                if coarity == 1: # Convert tuple of singleton tuples into simple tuple.
                     truthtable = tuple(e[0] for e in truthtable)
             else:
                 raise ValueError('truth table entries must all have the same length')
 
         # Ensure that data for functions of the requested arity and coarity is available.
-        if arity not in _db._data:
+        if arity not in _db.data:
             raise ValueError('no entries for functions of arity ' + str(arity))
 
-        if coarity not in _db._data[arity]:
+        if coarity not in _db.data[arity]:
             raise ValueError(
                 'no entries for functions of arity ' + str(arity) + ' ' +\
                 'having output vectors of length ' + str(arity)
@@ -721,14 +740,14 @@ class circuitdb(dict):
         if not frozenset(operators).issubset(logical.every):
             raise ValueError('collection of operators must only contain valid operators')
 
-        if frozenset(operators) not in _db._data[arity][1]:
+        if frozenset(operators) not in _db.data[arity][1]:
             raise ValueError(
                 'no entries for functions of arity ' + str(arity) + ' ' +\
                 'that have only the specified operators'
             )
 
         # Minimize the total number of operators of any available kind by default.
-        minimize_ = list(sorted(list(_db._data[arity][1][frozenset(operators)].keys())))[0]
+        minimize_ = list(sorted(list(_db.data[arity][1][frozenset(operators)].keys())))[0]
         minimize = minimize_ if minimize is None else minimize
 
         # Check that the operators to minimize are valid and corresponding data exists.
@@ -744,7 +763,7 @@ class circuitdb(dict):
                 'must contain only valid operators'
             )
 
-        if frozenset(minimize) not in _db._data[arity][1][frozenset(operators)]:
+        if frozenset(minimize) not in _db.data[arity][1][frozenset(operators)]:
             raise ValueError(
                 'no entries for functions of arity ' + str(arity) + ' ' +\
                 'for specified operators and minimization criteria'
@@ -752,13 +771,13 @@ class circuitdb(dict):
 
         # The bracket notation below is overloaded in the :obj:`records.__getitem__` method,
         # so there is no risk of users modifying the data.
-        return _db._data[arity][coarity][frozenset(operators)][frozenset(minimize)][truthtable]
+        return _db.data[arity][coarity][frozenset(operators)][frozenset(minimize)][truthtable]
 
 # Exported object with function-like and dictionary-like interfaces
 # hides the class definition that is used to construct it.
 if os.environ.get("CIRCUITDB_DOCS") != "1":
     circuitdb_ = circuitdb
-    circuitdb = circuitdb_(_db._data)
+    circuitdb = circuitdb_(_db.data)
 
 if __name__ == "__main__":
     doctest.testmod() # pragma: no cover
