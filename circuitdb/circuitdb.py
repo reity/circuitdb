@@ -18,7 +18,7 @@ class _db(dict):
     """
     _data = {}
 
-class record(str):
+class record(bytes):
     """
     Wrapper class for an individual record (*i.e.*, encoded data corresponding to a
     circuit).
@@ -36,7 +36,7 @@ class record(str):
         >>> g3 = c.gate(logical.xor_, [g0, g2])
         >>> g4 = c.gate(logical.nimp_, [g1, g3])
         >>> g5 = c.gate(logical.id_, [g4], is_output=True)
-        >>> record.from_circuit(c)
+        >>> record.from_circuit(c).to_base64()
         'CQACBAEDBgQ='
         """
         # Create table for converting an encoded operator into an actual operator value.
@@ -52,24 +52,34 @@ class record(str):
                     [circuit.gate.index(gi) for gi in g.inputs]
                 )
 
-        return record(base64.standard_b64encode(bytes(bs)).decode('utf-8'))
+        return record(bytes(bs))
+
+    @staticmethod
+    def from_base64(string: str) -> record:
+        """
+        Construct an instance from a Base64-encoded string representation of a record.
+
+        >>> record.from_base64('CQACBAEDBgQ=').hex()
+        '0900020401030604'
+        """
+        return record(base64.standard_b64decode(string))
 
     def to_circuit(self: record, truthtable: tuple) -> circuit.circuit:
         """
         Decode this record into a :obj:`~circuit.circuit.circuit` object.
 
-        >>> record.to_circuit('CQACBAEDBgQ=', (0, 0, 1, 0, 0, 0, 0, 1)).gate.to_legible()
+        >>> c = record.from_base64('CQACBAEDBgQ=').to_circuit((0, 0, 1, 0, 0, 0, 0, 1))
+        >>> c.gate.to_legible()
         (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
         """
         # Create table for converting an encoded operator into an actual operator value.
         integer_to_operator = list(sorted(list(logical.every)))
 
         # Parse the gate information from the encoded representation.
-        bs = list(base64.standard_b64decode(self))
         (j, ts) = (0, [])
-        while j < len(bs):
-            operator = integer_to_operator[bs[j]]
-            ts.append((operator, bs[j + 1: j + 1 + operator.arity()]))
+        while j < len(self):
+            operator = integer_to_operator[self[j]]
+            ts.append((operator, self[j + 1: j + 1 + operator.arity()]))
             j += 1 + operator.arity()
 
         # Build the circuit object programmatically.
@@ -86,10 +96,23 @@ class record(str):
 
         return c
 
+    def to_base64(self: record) -> str:
+        """
+        Convert this instance into a Base64-encoded string representation.
+
+        >>> c = circuit.circuit()
+        >>> g0 = c.gate(logical.id_, is_input=True)
+        >>> g1 = c.gate(logical.not_, [g0])
+        >>> g2 = c.gate(logical.id_, [g1], is_output=True)
+        >>> record.from_circuit(c).to_base64()
+        'DAAGAQ=='
+        """
+        return base64.standard_b64encode(self).decode('utf-8')
+
 class records(list):
     """
-    Wrapper class for a base-level operation-to-circuit map (corresponding to a given
-    arity, coarity, operator set, and operator set to minimize).
+    Wrapper class for a base-level operation-to-circuit map (corresponding to a fixed
+    combination of arity, coarity, operator set, and operator set to minimize).
     """
     def __getitem__(self: records, truthtable: tuple) -> record:
         """
@@ -143,18 +166,18 @@ _db._data\
     [1][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAADAAEGAg==',
         'BgA=',
         'DAAGAQ==',
         'DAAKAAEGAg==',
-    ])
+    ]))
 
 _db._data\
     [2][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAADAAIGAw==',
         'AwABBgI=',
         'DAEDAAIGAw==',
@@ -171,13 +194,13 @@ _db._data\
         'DAAKAQIGAw==',
         'AwABDAIGAw==',
         'DAAKAAIGAw==',
-    ])
+    ]))
 
 _db._data\
     [2][2]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAADAAIGAwYD',
         'DAADAAEDAAIGBAYD',
         'DAADAAEDAAIGAwYE',
@@ -434,13 +457,13 @@ _db._data\
         'AwABDAIKAAMGAwYE',
         'AwABDAIKAAMGBAYD',
         'DAAKAAIGAwYD',
-    ])
+    ]))
 
 _db._data\
     [3][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAADAAMGBA==',
         'AwABAwIDBgQ=',
         'DAIDAAEDAwQGBQ==',
@@ -697,24 +720,24 @@ _db._data\
         'AwABDAMKAgQGBQ==',
         'AwABAwIDDAQGBQ==',
         'DAAKAAMGBA==',
-    ])
+    ]))
 
 _db._data\
     [1][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAAMAAkBAgYD',
         'BgA=',
         'DAAGAQ==',
         'DAAJAAEGAg==',
-    ])
+    ]))
 
 _db._data\
     [2][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAAMAAkCAwYE',
         'AwABBgI=',
         'DAEDAAIGAw==',
@@ -731,13 +754,13 @@ _db._data\
         'DAADAAEJAgMGBA==',
         'AwABDAIGAw==',
         'DAAJAAIGAw==',
-    ])
+    ]))
 
 _db._data\
     [2][2]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAADAAIGAwYD',
         'DAADAAEDAAIGBAYD',
         'DAADAAEDAAIGAwYE',
@@ -994,13 +1017,13 @@ _db._data\
         'AwABDAIJAgMGAwYE',
         'AwABDAIJAgMGBAYD',
         'DAAJAAIGAwYD',
-    ])
+    ]))
 
 _db._data\
     [3][1]\
     [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])]\
     [frozenset([logical.and_])]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'DAAMAAkDBAYF',
         'AwABAwIDBgQ=',
         'DAIDAAEDAwQGBQ==',
@@ -1257,33 +1280,33 @@ _db._data\
         'DAIDAAEDAwQMBQYG',
         'AwABAwIDDAQGBQ==',
         'DAAJAAMGBA==',
-    ])
+    ]))
 
 _db._data\
     [0][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'AAYA',
         'CwYA',
-    ])
+    ]))
 
 _db._data\
     [1][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'AQAGAQ==',
         'BgA=',
         'DAAGAQ==',
         'EQAGAQ==',
-    ])
+    ]))
 
 _db._data\
     [2][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'AgABBgI=',
         'AwABBgI=',
         'BAABBgI=',
@@ -1300,13 +1323,13 @@ _db._data\
         'EwABBgI=',
         'FAABBgI=',
         'FQABBgI=',
-    ])
+    ]))
 
 _db._data\
     [2][2]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'AQAGAgYC',
         'AgABAwABBgIGAw==',
         'AgABAwABBgMGAg==',
@@ -1563,13 +1586,13 @@ _db._data\
         'FQABFAABBgMGAg==',
         'FQABFAABBgIGAw==',
         'EQAGAgYC',
-    ])
+    ]))
 
 _db._data\
     [3][1]\
     [frozenset(logical.every)]\
     [frozenset(logical.every)]\
-    = records([
+    = records(map(base64.standard_b64decode, [
         'AQAGAw==',
         'AwABAwIDBgQ=',
         'AwABBwIDBgQ=',
@@ -1826,7 +1849,7 @@ _db._data\
         'AwABEAIDBgQ=',
         'AwABFAIDBgQ=',
         'EQAGAw==',
-    ])
+    ]))
 
 class circuitdb(dict):
     """
