@@ -94,7 +94,7 @@ Testing and Conventions
 -----------------------
 All unit tests are executed and their coverage is measured when using `pytest <https://docs.pytest.org/>`_ (see ``setup.cfg`` for configuration details)::
 
-    python -m pip install pytest pytest-cov
+    python -m pip install pytest~=7.0 pytest-cov~=3.0
     python -m pytest
 
 Alternatively, all unit tests are included in the module itself and can be executed using `doctest <https://docs.python.org/3/library/doctest.html>`_::
@@ -103,7 +103,7 @@ Alternatively, all unit tests are included in the module itself and can be execu
 
 Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
 
-    python -m pip install pylint
+    python -m pip install pylint~=2.14.0
     python -m pylint circuitdb
 
 Contributions
@@ -122,7 +122,7 @@ This library can be published as a `package on PyPI <https://pypi.org/project/ci
     rm -rf dist *.egg-info
     python setup.py sdist bdist_wheel
 
-Next, install the `twine <https://pypi.org/project/twine>`_ package and upload the package distribution archive to PyPI::
+Next, install the `twine <https://pypi.org/project/twine>`_ package and upload the package distribution archive to `PyPI <https://pypi.org/>`_::
 
     python -m pip install twine
     python -m twine upload dist/*
