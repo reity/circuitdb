@@ -1,6 +1,5 @@
 """
-Data set of optimal circuits for Boolean functions that have
-specific low arities.
+Data set of optimal circuits for Boolean functions that have low arity.
 """
 from __future__ import annotations
 import doctest
@@ -370,7 +369,7 @@ class circuitdb(dict):
 
     **Logical Function Representation:** Logical functions are represented using
     tuples in an identical manner to that of the :obj:`~logical.logical.logical`
-    class defined in the `logical <https://pypi.org/project/logical/>`_ library. For
+    class defined in the `logical <https://pypi.org/project/logical>`__ library. For
     example, the logical function *f* (*x*, *y*, *z*) = *x* **and** *y* **and** *z*
     (*i.e.*, three-argument conjunction) is represented using a tuple representation
     of the output column of the truth table for the function (assuming that the
@@ -388,7 +387,7 @@ class circuitdb(dict):
 
     **Circuit Representation:** Retrieved circuits are instances of the
     :obj:`~circuit.circuit.circuit` class that is defined in the
-    `circuit <https://pypi.org/project/circuit/>`_ library. In order to make this
+    `circuit <https://pypi.org/project/circuit>`__ library. In order to make this
     documentation human-readible, the examples include an invocation of the
     :obj:`~circuit.circuit.gates.to_legible` method belonging to the gate list
     associated with the returned :obj:`~circuit.circuit.circuit` object. This
@@ -396,7 +395,7 @@ class circuitdb(dict):
     gate is represented as a tuple. The first entry in each gate tuple is the name
     of the logical function corresponding to that gate (as defined in the
     :obj:`~logical.logical.logical.names` class attribute in the
-    `logical <https://pypi.org/project/logical/>`_ library). The remaining
+    `logical <https://pypi.org/project/logical>`__ library). The remaining
     entries in the gate tuple are the indices of the input gates to that gate.
 
     >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1)).gate.to_legible()
@@ -450,7 +449,7 @@ class circuitdb(dict):
 
     By default (or if the set of *all* gates is supplied using the constant
     :obj:`~logical.logical.logical.every` that is defined in the
-    `logical <https://pypi.org/project/logical/>`_), a smallest circuit that can
+    `logical <https://pypi.org/project/logical>`__), a smallest circuit that can
     be built using *any* combination of unary or binary gates is returned.
 
     >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1)).gate.to_legible()
@@ -487,7 +486,7 @@ class circuitdb(dict):
     database. **All** functions for a given combination of inputs and outputs are
     supported (*e.g.*, all ``2**(2**3) = 256`` functions having three inputs and one
     output are supported). Gate sets are defined using operator constants found in
-    the `logical <https://pypi.org/project/logical/>`_ library).
+    the `logical <https://pypi.org/project/logical>`__ library).
 
     +------------+-------------+-----------------------------+----------------------------+
     | **inputs** | **outputs** | **operators**               | **minimize**               |
@@ -775,9 +774,9 @@ minimization criteria
 
 # Exported object with function-like and dictionary-like interfaces
 # hides the class definition that is used to construct it.
-if os.environ.get("CIRCUITDB_DOCS") != "1":
+if os.environ.get('CIRCUITDB_DOCS') != '1':
     circuitdb_ = circuitdb
     circuitdb = circuitdb_(_db.data)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     doctest.testmod() # pragma: no cover
