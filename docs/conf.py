@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../src')) # Prioritize local module copy.
 
 # Set environment variable so module can detect that documentation is
 # being generated.
