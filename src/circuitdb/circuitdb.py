@@ -41,11 +41,11 @@ class record(bytes):
         # Convert gate data into a list of integers. Note that the number of gates
         # (including input and output gates) must not exceed 256.
         bs = []
-        for g in circuit.gate:
+        for g in circuit.gates:
             if not g.is_input:
                 bs.extend(
                     [integer_to_operator.index(g.operation)] +
-                    [circuit.gate.index(gi) for gi in g.inputs]
+                    [circuit.gates.index(gi) for gi in g.inputs]
                 )
 
         return record(bytes(bs))
@@ -68,7 +68,7 @@ class record(bytes):
         Decode this record into a :obj:`~circuit.circuit.circuit` object.
 
         >>> c = record.from_base64('CQACBAEDBgQ=').to_circuit((0, 0, 1, 0, 0, 0, 0, 1))
-        >>> c.gate.to_legible()
+        >>> c.gates.to_legible()
         (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
         """
         # Create table for converting an encoded operator into an actual operator value.
@@ -382,14 +382,14 @@ class circuitdb(dict):
     of the output column of the truth table for the function (assuming that the
     possible inputs are in ascending dictionary order): ``(0, 0, 0, 0, 0, 0, 0, 1)``.
 
-    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1)).gate.to_legible()
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1)).gates.to_legible()
     (('id',), ('id',), ('id',), ('and', 0, 1), ('and', 2, 3), ('id', 4))
 
     For logical functions having multiple outputs, the entries in the tuple may
     themselves be tuples. For example, *f* (*x*, *y*) = (*y*, *x*) is represented
     using the tuple ``((0, 0), (1, 0), (0, 1), (1, 1))``.
 
-    >>> circuitdb(((0, 0), (1, 0), (0, 1), (1, 1))).gate.to_legible()
+    >>> circuitdb(((0, 0), (1, 0), (0, 1), (1, 1))).gates.to_legible()
     (('id',), ('id',), ('id', 1), ('id', 0))
 
     **Circuit Representation:** Retrieved circuits are instances of the
@@ -405,7 +405,7 @@ class circuitdb(dict):
     `logical <https://pypi.org/project/logical>`__ library). The remaining
     entries in the gate tuple are the indices of the input gates to that gate.
 
-    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1)).gate.to_legible()
+    >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 1)).gates.to_legible()
     (('id',), ('id',), ('id',), ('and', 0, 1), ('and', 2, 3), ('id', 4))
 
     In the circuit above, the entry ``('and', 2, 3)`` represents a gate that
@@ -426,7 +426,7 @@ class circuitdb(dict):
     >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
     ...     frozenset({logical.id_, logical.not_, logical.and_, logical.or_})
-    ... ).gate.to_legible():
+    ... ).gates.to_legible():
     ...     print(g)
     ('id',)
     ('id',)
@@ -444,7 +444,7 @@ class circuitdb(dict):
     >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
     ...     frozenset({logical.id_, logical.not_, logical.and_, logical.xor_})
-    ... ).gate.to_legible():
+    ... ).gates.to_legible():
     ...     print(g)
     ('id',)
     ('id',)
@@ -459,9 +459,9 @@ class circuitdb(dict):
     `logical <https://pypi.org/project/logical>`__), a smallest circuit that can
     be built using *any* combination of unary or binary gates is returned.
 
-    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1)).gate.to_legible()
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1)).gates.to_legible()
     (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
-    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), logical.every).gate.to_legible()
+    >>> circuitdb((0, 0, 1, 0, 0, 0, 0, 1), logical.every).gates.to_legible()
     (('id',), ('id',), ('id',), ('xor', 0, 2), ('nimp', 1, 3), ('id', 4))
 
     **Set of Gates to Minimize:** Multiple possible circuits that use gates from
@@ -475,7 +475,7 @@ class circuitdb(dict):
     >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
     ...     frozenset({logical.id_, logical.not_, logical.and_, logical.xor_}), {logical.and_}
-    ... ).gate.to_legible():
+    ... ).gates.to_legible():
     ...     print(g)
     ('id',)
     ('id',)
@@ -526,9 +526,9 @@ class circuitdb(dict):
     The database supports retrieval using index notation, as well.
 
     >>> ops = logical.every
-    >>> circuitdb[1][1][ops][ops][(0, 0)].gate.to_legible()
+    >>> circuitdb[1][1][ops][ops][(0, 0)].gates.to_legible()
     (('id',), ('uf', 0), ('id', 1))
-    >>> circuitdb[1][1][ops][ops][((0,), (0,))].gate.to_legible()
+    >>> circuitdb[1][1][ops][ops][((0,), (0,))].gates.to_legible()
     (('id',), ('uf', 0), ('id', 1))
 
     The top-level database instance has keys that represent to the number of
@@ -542,7 +542,7 @@ class circuitdb(dict):
     >>> ks = list(sorted(list(circuitdb[1][1].keys())))
     >>> ks[0] == frozenset({logical.and_, logical.or_, logical.not_, logical.id_})
     True
-    >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)].gate.to_legible()
+    >>> circuitdb[2][1][ks[0]][ks[0]][(1,1,1,1)].gates.to_legible()
     (('id',), ('id',), ('not', 0), ('or', 0, 2), ('id', 3))
 
     Note that the internal representation organizes the circuits by arity.
@@ -570,17 +570,17 @@ class circuitdb(dict):
         functions having one output are represented using a tuple of
         integers (or booleans), or a tuple of one-element tuples.
 
-        >>> circuitdb((0, 0)).gate.to_legible()
+        >>> circuitdb((0, 0)).gates.to_legible()
         (('id',), ('uf', 0), ('id', 1))
-        >>> circuitdb(((0,), (0,))).gate.to_legible()
+        >>> circuitdb(((0,), (0,))).gates.to_legible()
         (('id',), ('uf', 0), ('id', 1))
-        >>> circuitdb((False, False)).gate.to_legible()
+        >>> circuitdb((False, False)).gates.to_legible()
         (('id',), ('uf', 0), ('id', 1))
 
         A logical function having a vector of two outputs is represented using
         a tuple of two-element tuples.
 
-        >>> circuitdb(((1, 0), (1, 0), (1, 0), (0, 1))).gate.to_legible()
+        >>> circuitdb(((1, 0), (1, 0), (1, 0), (0, 1))).gates.to_legible()
         (('id',), ('id',), ('and', 0, 1), ('not', 2), ('id', 3), ('id', 2))
 
         It is also possible to retrieve a smallest circuit that only uses gates
@@ -589,7 +589,7 @@ class circuitdb(dict):
         >>> circuitdb(
         ...     (0, 0, 0, 0, 0, 0, 0, 0),
         ...     {logical.id_, logical.not_, logical.and_, logical.or_}
-        ... ).gate.to_legible()
+        ... ).gates.to_legible()
         (('id',), ('id',), ('id',), ('not', 0), ('and', 0, 3), ('id', 4))
 
         Any attempt to access the data with a malformed key raises an
