@@ -2,7 +2,7 @@
 name = "circuitdb"
 version = "2.0.0"
 description = "Data set of optimal circuits for Boolean functions that have low arity."
-license = {file = "LICENSE"}
+license = {text = "MIT"}
 authors = [
     {name = "Andrei Lapets"},
     {email = "a@lapets.io"}
@@ -16,9 +16,8 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/reity/circuitdb"
-repository = "https://github.com/reity/circuitdb"
-documentation = "https://circuitdb.readthedocs.org"
+Repository = "https://github.com/reity/circuitdb"
+Documentation = "https://circuitdb.readthedocs.io"
 
 [project.optional-dependencies]
 docs = [
@@ -37,14 +36,13 @@ coveralls = [
     "coveralls~=3.3.1"
 ]
 publish = [
+    "build~=0.8",
     "twine~=4.0"
 ]
 
 [build-system]
 requires = [
-    "build~=0.8",
-    "setuptools~=62.0",
-    "wheel~=0.37"
+    "setuptools~=62.0"
 ]
 build-backend = "setuptools.build_meta"
 

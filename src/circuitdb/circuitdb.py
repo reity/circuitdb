@@ -17,7 +17,9 @@ class record(bytes):
     circuit).
     """
     @staticmethod
-    def from_circuit(circuit: circuit.circuit) -> record: # pylint: disable=W0621
+    def from_circuit(
+            circuit: circuit.circuit # pylint: disable=redefined-outer-name
+        ) -> record:
         """
         Encode a :obj:`~circuit.circuit.circuit` object and construct a record that
         represents it.
@@ -41,7 +43,7 @@ class record(bytes):
         for g in circuit.gate:
             if not g.is_input:
                 bs.extend(
-                    [integer_to_operator.index(g.operation)] + \
+                    [integer_to_operator.index(g.operation)] +
                     [circuit.gate.index(gi) for gi in g.inputs]
                 )
 
@@ -128,7 +130,7 @@ class records(list):
                     for r in importlib.resources.files('circuitdb').iterdir()
                 }[resource].open('rb') as file:
                     data = file.read()
-            except: # pylint: disable=W0702 # pragma: no cover
+            except: # pylint: disable=bare-except # pragma: no cover
                 # Not deprecated in Python version 3.10 and below.
                 data = importlib.resources.read_binary('circuitdb', resource)
 
@@ -150,7 +152,7 @@ class records(list):
         bs = []
         for (j, r) in enumerate(self):
             bs.extend(
-                [b + 1 for b in record(r)] + \
+                [b + 1 for b in record(r)] +
                 ([] if j == len(self) - 1 else [0])
             )
         with open(path, 'wb') as file:
@@ -546,7 +548,7 @@ class circuitdb(dict):
     >>> all(len(_d[3][o][m]) == 256 for o in _d[3] for m in _d[3][o])
     True
     """
-    def __call__( # pylint: disable=R0912
+    def __call__(
         self: circuitdb,
         truthtable: tuple,
         operators: set = None,
@@ -597,18 +599,15 @@ class circuitdb(dict):
         >>> circuitdb(('abc', 'xyz'))
         Traceback (most recent call last):
           ...
-        TypeError: truth table must contain boolean values, integers in the range [0, 1], or \
-tuples of such
+        TypeError: truth table must contain boolean values, integers in the range ... of such
         >>> circuitdb((('abc', 'xyz')))
         Traceback (most recent call last):
           ...
-        TypeError: truth table must contain boolean values, integers in the range [0, 1], or \
-tuples of such
+        TypeError: truth table must contain boolean values, integers in the range ... of such
         >>> circuitdb(((1, 'abc'), (1, 0), (1, 0), (0, 1)))
         Traceback (most recent call last):
           ...
-        TypeError: truth table must contain boolean values, integers in the range [0, 1], or \
-tuples of such
+        TypeError: truth table must contain boolean values, integers in the range ... of such
         >>> circuitdb(((), ()))
         Traceback (most recent call last):
           ...
@@ -645,18 +644,15 @@ tuples of such
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, 123)
         Traceback (most recent call last):
           ...
-        TypeError: collection of operators the number of which to minimize must be a set, \
-frozenset, list, or tuple
+        TypeError: collection of operators the number of which to minimize must be a ... tuple
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1, 0)])
         Traceback (most recent call last):
           ...
-        ValueError: collection of operators the number of which to minimize must contain only \
-valid operators
+        ValueError: collection of operators the number of which to minimize must ... operators
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1)])
         Traceback (most recent call last):
           ...
-        ValueError: no entries for functions of arity 3 for specified operators and \
-minimization criteria
+        ValueError: no entries for functions of arity 3 for specified operators ... criteria
 
         Additional exhaustive tests are presented below.
 
@@ -678,6 +674,8 @@ minimization criteria
         ... )
         True
         """
+        # pylint: disable=too-many-branches
+
         # Ensure the function truth table is a tuple.
         if not isinstance(truthtable, tuple):
             raise TypeError('truth table must be a tuple')
@@ -686,13 +684,13 @@ minimization criteria
         if all(isinstance(e, tuple) for e in truthtable):
             if not all(all(b in [0, 1, False, True] for b in e) for e in truthtable):
                 raise TypeError(
-                    'truth table must contain boolean values, integers in the range [0, 1], ' + \
-                    'or tuples of such'
+                    'truth table must contain boolean values, integers in the ' +
+                    'range [0, 1], or tuples of such'
                 )
         elif not all(e in [0, 1, False, True] for e in truthtable):
             raise TypeError(
-                'truth table must contain boolean values, integers in the range [0, 1], ' + \
-                'or tuples of such'
+                'truth table must contain boolean values, integers in the ' +
+                'range [0, 1], or tuples of such'
             )
 
         # Determine the arity of the function represented by the truth table.
@@ -721,7 +719,7 @@ minimization criteria
 
         if coarity not in _db[arity]:
             raise ValueError(
-                'no entries for functions of arity ' + str(arity) + ' ' +\
+                'no entries for functions of arity ' + str(arity) + ' ' +
                 'having output vectors of length ' + str(arity)
             )
 
@@ -742,7 +740,7 @@ minimization criteria
 
         if frozenset(operators) not in _db[arity][1]:
             raise ValueError(
-                'no entries for functions of arity ' + str(arity) + ' ' +\
+                'no entries for functions of arity ' + str(arity) + ' ' +
                 'that have only the specified operators'
             )
 
@@ -753,19 +751,19 @@ minimization criteria
         # Check that the operators to minimize are valid and corresponding data exists.
         if not isinstance(minimize, (set, frozenset, list, tuple)):
             raise TypeError(
-                'collection of operators the number of which to minimize ' +\
+                'collection of operators the number of which to minimize ' +
                 'must be a set, frozenset, list, or tuple'
             )
 
         if not frozenset(minimize).issubset(logical.every):
             raise ValueError(
-                'collection of operators the number of which to minimize ' +\
+                'collection of operators the number of which to minimize ' +
                 'must contain only valid operators'
             )
 
         if frozenset(minimize) not in _db[arity][1][frozenset(operators)]:
             raise ValueError(
-                'no entries for functions of arity ' + str(arity) + ' ' +\
+                'no entries for functions of arity ' + str(arity) + ' ' +
                 'for specified operators and minimization criteria'
             )
 
@@ -774,7 +772,8 @@ minimization criteria
         return _db[arity][coarity][frozenset(operators)][frozenset(minimize)][truthtable]
 
 # Exported object with function-like and dictionary-like interfaces
-# hides the class definition that is used to construct it.
+# hides the class definition that is used to construct it (unless
+# this module is being used to auto-generate documentation).
 if os.environ.get('CIRCUITDB_DOCS') != '1':
     cls: type = circuitdb
     circuitdb: cls = cls(_db)
