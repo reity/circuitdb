@@ -2,6 +2,7 @@
 Data set of optimal circuits for Boolean functions that have low arity.
 """
 from __future__ import annotations
+from typing import Tuple, Union, Optional, AbstractSet
 import doctest
 import importlib.resources
 import os
@@ -59,7 +60,10 @@ class record(bytes):
         """
         return record(base64.standard_b64decode(string))
 
-    def to_circuit(self: record, truthtable: tuple) -> circuit.circuit:
+    def to_circuit(
+            self: record,
+            truthtable: Union[Tuple[int, ...], Tuple[Tuple[int, ...], ...]]
+        ) -> circuit.circuit:
         """
         Decode this record into a :obj:`~circuit.circuit.circuit` object.
 
@@ -158,7 +162,10 @@ class records(list):
         with open(path, 'wb') as file:
             file.write(bytes(bs))
 
-    def __getitem__(self: records, truthtable: tuple) -> record:
+    def __getitem__(
+            self: records,
+            truthtable: Union[Tuple[int, ...], Tuple[Tuple[int, ...], ...]]
+        ) -> record:
         """
         Data retrieval wrapper that performs normalization of the truth table,
         but does not check that it has a correct structure. To ensure the supplied
@@ -194,27 +201,27 @@ for i in range(0, 4):
 
     if i == 0:
         _db[i][1] = {
-            frozenset(logical.every): {}
+            logical.every: {}
         }
 
     if i in range(1, 4):
         _db[i][1] = {
-            frozenset([logical.id_, logical.not_, logical.and_, logical.or_]): {},
-            frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]): {},
-            frozenset(logical.every): {}
+            frozenset({logical.id_, logical.not_, logical.and_, logical.or_}): {},
+            frozenset({logical.id_, logical.not_, logical.and_, logical.xor_}): {},
+            logical.every: {}
         }
 
     if i == 2:
         _db[i][2] = {
-            frozenset([logical.id_, logical.not_, logical.and_, logical.or_]): {},
-            frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]): {},
-            frozenset(logical.every): {}
+            frozenset({logical.id_, logical.not_, logical.and_, logical.or_}): {},
+            frozenset({logical.id_, logical.not_, logical.and_, logical.xor_}): {},
+            logical.every: {}
         }
 
 _db \
     [1][1] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
     = records(map(base64.standard_b64decode, [
         'DAADAAEGAg==',
         'BgA=',
@@ -224,8 +231,8 @@ _db \
 
 _db \
     [2][1] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
     = records(map(base64.standard_b64decode, [
         'DAADAAIGAw==',
         'AwABBgI=',
@@ -247,20 +254,20 @@ _db \
 
 _db \
     [2][2] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
     = records.from_file('2_2_id-not-and-or_id-not-and-or')
 
 _db \
     [3][1] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.or_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.or_})] \
     = records.from_file('3_1_id-not-and-or_id-not-and-or')
 
 _db \
     [1][1] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
-    [frozenset([logical.and_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.xor_})] \
+    [frozenset({logical.and_})] \
     = records(map(base64.standard_b64decode, [
         'DAAMAAkBAgYD',
         'BgA=',
@@ -270,8 +277,8 @@ _db \
 
 _db \
     [2][1] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
-    [frozenset([logical.and_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.xor_})] \
+    [frozenset({logical.and_})] \
     = records(map(base64.standard_b64decode, [
         'DAAMAAkCAwYE',
         'AwABBgI=',
@@ -293,20 +300,20 @@ _db \
 
 _db \
     [2][2] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
-    [frozenset([logical.and_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.xor_})] \
+    [frozenset({logical.and_})] \
     = records.from_file('2_2_id-not-and-xor_and')
 
 _db \
     [3][1] \
-    [frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])] \
-    [frozenset([logical.and_])] \
+    [frozenset({logical.id_, logical.not_, logical.and_, logical.xor_})] \
+    [frozenset({logical.and_})] \
     = records.from_file('3_1_id-not-and-xor_and')
 
 _db \
     [0][1] \
-    [frozenset(logical.every)] \
-    [frozenset(logical.every)] \
+    [logical.every] \
+    [logical.every] \
     = records(map(base64.standard_b64decode, [
         'AAYA',
         'CwYA',
@@ -314,8 +321,8 @@ _db \
 
 _db \
     [1][1] \
-    [frozenset(logical.every)] \
-    [frozenset(logical.every)] \
+    [logical.every] \
+    [logical.every] \
     = records(map(base64.standard_b64decode, [
         'AQAGAQ==',
         'BgA=',
@@ -325,8 +332,8 @@ _db \
 
 _db \
     [2][1] \
-    [frozenset(logical.every)] \
-    [frozenset(logical.every)] \
+    [logical.every] \
+    [logical.every] \
     = records(map(base64.standard_b64decode, [
         'AgABBgI=',
         'AwABBgI=',
@@ -348,14 +355,14 @@ _db \
 
 _db \
     [2][2] \
-    [frozenset(logical.every)] \
-    [frozenset(logical.every)] \
+    [logical.every] \
+    [logical.every] \
     = records.from_file('2_2_every_every')
 
 _db \
     [3][1] \
-    [frozenset(logical.every)] \
-    [frozenset(logical.every)] \
+    [logical.every] \
+    [logical.every] \
     = records.from_file('3_1_every_every')
 
 class circuitdb(dict):
@@ -418,7 +425,7 @@ class circuitdb(dict):
     >>> from logical import logical
     >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
-    ...     frozenset([logical.id_, logical.not_, logical.and_, logical.or_])
+    ...     frozenset({logical.id_, logical.not_, logical.and_, logical.or_})
     ... ).gate.to_legible():
     ...     print(g)
     ('id',)
@@ -436,7 +443,7 @@ class circuitdb(dict):
 
     >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
-    ...     frozenset([logical.id_, logical.not_, logical.and_, logical.xor_])
+    ...     frozenset({logical.id_, logical.not_, logical.and_, logical.xor_})
     ... ).gate.to_legible():
     ...     print(g)
     ('id',)
@@ -467,7 +474,7 @@ class circuitdb(dict):
 
     >>> for g in circuitdb(
     ...     (0, 0, 1, 0, 0, 0, 0, 1),
-    ...     frozenset([logical.id_, logical.not_, logical.and_, logical.xor_]), {logical.and_}
+    ...     frozenset({logical.id_, logical.not_, logical.and_, logical.xor_}), {logical.and_}
     ... ).gate.to_legible():
     ...     print(g)
     ('id',)
@@ -518,7 +525,7 @@ class circuitdb(dict):
 
     The database supports retrieval using index notation, as well.
 
-    >>> ops = frozenset(logical.every)
+    >>> ops = logical.every
     >>> circuitdb[1][1][ops][ops][(0, 0)].gate.to_legible()
     (('id',), ('uf', 0), ('id', 1))
     >>> circuitdb[1][1][ops][ops][((0,), (0,))].gate.to_legible()
@@ -550,9 +557,9 @@ class circuitdb(dict):
     """
     def __call__(
         self: circuitdb,
-        truthtable: tuple,
-        operators: set = None,
-        minimize: set = None
+        truthtable: Union[Tuple[int, ...], Tuple[Tuple[int, ...], ...]],
+        operators: Optional[AbstractSet[logical.logical]] = None,
+        minimize: Optional[AbstractSet[logical.logical]] = None
     ) -> circuit.circuit:
         """
         Function-like interface for the circuit database, with user-friendly
@@ -581,7 +588,7 @@ class circuitdb(dict):
 
         >>> circuitdb(
         ...     (0, 0, 0, 0, 0, 0, 0, 0),
-        ...     [logical.id_, logical.not_, logical.and_, logical.or_]
+        ...     {logical.id_, logical.not_, logical.and_, logical.or_}
         ... ).gate.to_legible()
         (('id',), ('id',), ('id',), ('not', 0), ('and', 0, 3), ('id', 4))
 
@@ -627,29 +634,29 @@ class circuitdb(dict):
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), 132)
         Traceback (most recent call last):
           ...
-        TypeError: collection of operators must be a set, frozenset, list, or tuple
+        TypeError: collection of operators must be a set or frozenset
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), 132)
         Traceback (most recent call last):
           ...
-        TypeError: collection of operators must be a set, frozenset, list, or tuple
-        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [(0, 1, 0)])
+        TypeError: collection of operators must be a set or frozenset
+        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), {(0, 1, 0)})
         Traceback (most recent call last):
           ...
         ValueError: collection of operators must only contain valid operators
-        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), [(0, 1)])
+        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), {(0, 1)})
         Traceback (most recent call last):
           ...
         ValueError: no entries for functions of arity 3 that have only the specified operators
-        >>> id_not_and_or = [logical.id_, logical.not_, logical.and_, logical.or_]
+        >>> id_not_and_or = {logical.id_, logical.not_, logical.and_, logical.or_}
         >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, 123)
         Traceback (most recent call last):
           ...
-        TypeError: collection of operators the number of which to minimize must be a ... tuple
-        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1, 0)])
+        TypeError: collection of operators the number of which to minimize must be a ... frozenset
+        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, {(0, 1, 0)})
         Traceback (most recent call last):
           ...
         ValueError: collection of operators the number of which to minimize must ... operators
-        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, [(0, 1)])
+        >>> circuitdb((0, 0, 0, 0, 0, 0, 0, 0), id_not_and_or, {(0, 1)})
         Traceback (most recent call last):
           ...
         ValueError: no entries for functions of arity 3 for specified operators ... criteria
@@ -682,12 +689,12 @@ class circuitdb(dict):
 
         # Ensure that the function truth table has valid entry types.
         if all(isinstance(e, tuple) for e in truthtable):
-            if not all(all(b in [0, 1, False, True] for b in e) for e in truthtable):
+            if not all(all(b in (0, 1, False, True) for b in e) for e in truthtable):
                 raise TypeError(
                     'truth table must contain boolean values, integers in the ' +
                     'range [0, 1], or tuples of such'
                 )
-        elif not all(e in [0, 1, False, True] for e in truthtable):
+        elif not all(e in (0, 1, False, True) for e in truthtable):
             raise TypeError(
                 'truth table must contain boolean values, integers in the ' +
                 'range [0, 1], or tuples of such'
@@ -730,12 +737,12 @@ class circuitdb(dict):
             truthtable = tuple(tuple(map(int, e)) for e in truthtable)
 
         # Allow all operators by default or check that data is present for given operators.
-        operators = frozenset(logical.every) if operators is None else operators
+        operators = logical.every if operators is None else operators
 
-        if not isinstance(operators, (set, frozenset, list, tuple)):
-            raise TypeError('collection of operators must be a set, frozenset, list, or tuple')
+        if not isinstance(operators, (set, frozenset)):
+            raise TypeError('collection of operators must be a set or frozenset')
 
-        if not frozenset(operators).issubset(logical.every):
+        if not operators.issubset(logical.every):
             raise ValueError('collection of operators must only contain valid operators')
 
         if frozenset(operators) not in _db[arity][1]:
@@ -749,13 +756,13 @@ class circuitdb(dict):
         minimize = minimize_ if minimize is None else minimize
 
         # Check that the operators to minimize are valid and corresponding data exists.
-        if not isinstance(minimize, (set, frozenset, list, tuple)):
+        if not isinstance(minimize, (set, frozenset)):
             raise TypeError(
                 'collection of operators the number of which to minimize ' +
-                'must be a set, frozenset, list, or tuple'
+                'must be a set or frozenset'
             )
 
-        if not frozenset(minimize).issubset(logical.every):
+        if not minimize.issubset(logical.every):
             raise ValueError(
                 'collection of operators the number of which to minimize ' +
                 'must contain only valid operators'
