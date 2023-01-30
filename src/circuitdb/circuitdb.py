@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Tuple, Union, Optional, AbstractSet
 import doctest
 import importlib.resources
+import sys
 import os
 import math
 import base64
@@ -127,14 +128,14 @@ class records(list):
                 data = file.read()
         else:
             # Support Python version 3.7 and above.
-            try: # pragma: no cover
+            if sys.version_info.minor >= 9: # pragma: no cover
                 # Available in Python version 3.9 and above.
                 with {
                     r.name: r
                     for r in importlib.resources.files('circuitdb').iterdir()
                 }[resource].open('rb') as file:
                     data = file.read()
-            except: # pylint: disable=bare-except # pragma: no cover
+            else: # pragma: no cover
                 # Not deprecated in Python version 3.10 and below.
                 data = importlib.resources.read_binary('circuitdb', resource)
 
