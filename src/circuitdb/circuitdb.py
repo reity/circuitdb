@@ -130,7 +130,7 @@ class records(list):
             # Support Python version 3.7 and above.
             if sys.version_info.minor >= 9: # pragma: no cover
                 # Available in Python version 3.9 and above.
-                with {
+                with { # pylint: disable=no-member
                     r.name: r
                     for r in importlib.resources.files('circuitdb').iterdir()
                 }[resource].open('rb') as file:
